@@ -11,7 +11,7 @@ export function startCronJobs(): void {
   console.log("⏰ Starting cron jobs...");
 
   // APY tracking - every minute
-  apyTrackingJob = cron.schedule("* * * * *", async () => {
+  apyTrackingJob = cron.schedule("*/5 * * * *", async () => {
     // Check database connection
     if (!getDatabaseStatus()) {
       console.error("⚠️  Skipping APY tracking - database not connected");

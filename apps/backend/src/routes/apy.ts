@@ -93,6 +93,59 @@ router.get("/stats/:poolAddress", async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/apy/token/:tokenAddress
+ * Get APY history for all pools for a specific token
+ * Query params: hours (default: 24)
+ */
+router.get("/token/:tokenAddress", async (req: Request, res: Response) => {
+  try {
+    const { tokenAddress } = req.params;
+    const hours = parseInt(req.query.hours as string) || 24;
+
+    // Get latest APY to find all pools for this token
+    const latestApy = await getLatestApy();
+    const tokenPools = latestApy.filter(
+      (pool) => pool.input_token?.toLowerCase() === tokenAddress.toLowerCase()
+    );
+
+    if (tokenPools.length === 0) {
+      return res.json({
+        success: true,
+        token_address: tokenAddress,
+        hours,
+        pools: [],
+        message: "No pools found for this token",
+      });
+    }
+
+    // Get history for each pool
+    const poolsWithHistory = await Promise.all(
+      tokenPools.map(async (pool) => {
+        const history = await getPoolApyHistory(pool.pool_address, hours);
+        return {
+          ...pool,
+          history,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      token_address: tokenAddress,
+      hours,
+      count: poolsWithHistory.length,
+      pools: poolsWithHistory,
+    });
+  } catch (error: any) {
+    console.error("Error fetching token APY history:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch token APY history",
+    });
+  }
+});
+
+/**
  * GET /api/apy/cron/status
  * Get status of APY tracking cron jobs
  */

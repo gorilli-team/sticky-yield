@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 import Layout from "@/components/Layout";
+import ApyChart from "@/components/ApyChart";
 import {
   VAULT_ADDRESS,
   ASSET_TOKEN,
@@ -21,7 +22,7 @@ export default function VaultPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  
+
   // User balances
   const [tokenBalance, setTokenBalance] = useState("0");
   const [vaultBalance, setVaultBalance] = useState("0");
@@ -39,8 +40,16 @@ export default function VaultPage() {
       const signer = provider.getSigner();
       const address = await signer.getAddress();
 
-      const tokenContract = new ethers.Contract(ASSET_TOKEN, ERC20_ABI, provider);
-      const vaultContract = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, provider);
+      const tokenContract = new ethers.Contract(
+        ASSET_TOKEN,
+        ERC20_ABI,
+        provider
+      );
+      const vaultContract = new ethers.Contract(
+        VAULT_ADDRESS,
+        VAULT_ABI,
+        provider
+      );
 
       const [balance, vBalance, shares, allow] = await Promise.all([
         tokenContract.balanceOf(address),
@@ -81,14 +90,14 @@ export default function VaultPage() {
       const signer = provider.getSigner();
 
       const tokenContract = new ethers.Contract(ASSET_TOKEN, ERC20_ABI, signer);
-      
+
       // Approve max amount for convenience
       const maxAmount = ethers.constants.MaxUint256;
       const tx = await tokenContract.approve(VAULT_ADDRESS, maxAmount);
-      
+
       setSuccess("Approval transaction sent! Waiting for confirmation...");
       await tx.wait();
-      
+
       setSuccess("✅ Approval successful! You can now deposit.");
       await loadBalances();
     } catch (err: any) {
@@ -120,14 +129,18 @@ export default function VaultPage() {
       const provider = await wallet.getEthersProvider();
       const signer = provider.getSigner();
 
-      const vaultContract = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, signer);
-      
+      const vaultContract = new ethers.Contract(
+        VAULT_ADDRESS,
+        VAULT_ABI,
+        signer
+      );
+
       const amount = ethers.utils.parseUnits(depositAmount, 6); // Assuming 6 decimals
       const tx = await vaultContract.deposit(amount);
-      
+
       setSuccess("Deposit transaction sent! Waiting for confirmation...");
       await tx.wait();
-      
+
       setSuccess("✅ Deposit successful!");
       setDepositAmount("");
       await loadBalances();
@@ -160,14 +173,18 @@ export default function VaultPage() {
       const provider = await wallet.getEthersProvider();
       const signer = provider.getSigner();
 
-      const vaultContract = new ethers.Contract(VAULT_ADDRESS, VAULT_ABI, signer);
-      
+      const vaultContract = new ethers.Contract(
+        VAULT_ADDRESS,
+        VAULT_ABI,
+        signer
+      );
+
       const shares = ethers.utils.parseUnits(withdrawShares, 6); // Assuming 6 decimals
       const tx = await vaultContract.withdraw(shares);
-      
+
       setSuccess("Withdraw transaction sent! Waiting for confirmation...");
       await tx.wait();
-      
+
       setSuccess("✅ Withdrawal successful!");
       setWithdrawShares("");
       await loadBalances();
@@ -195,7 +212,10 @@ export default function VaultPage() {
         {!authenticated ? (
           <div className="connect-wallet-card">
             <h2>Connect Your Wallet</h2>
-            <p>Connect your wallet to deposit into the vault and start earning yields.</p>
+            <p>
+              Connect your wallet to deposit into the vault and start earning
+              yields.
+            </p>
             <button onClick={login} className="btn-primary">
               Connect Wallet
             </button>
@@ -206,15 +226,21 @@ export default function VaultPage() {
             <div className="balances-grid">
               <div className="balance-card">
                 <div className="balance-label">Your Wallet Balance</div>
-                <div className="balance-value">{parseFloat(tokenBalance).toFixed(2)} USD₮0</div>
+                <div className="balance-value">
+                  {parseFloat(tokenBalance).toFixed(2)} USD₮0
+                </div>
               </div>
               <div className="balance-card">
                 <div className="balance-label">Your Vault Balance</div>
-                <div className="balance-value">{parseFloat(vaultBalance).toFixed(2)} USD₮0</div>
+                <div className="balance-value">
+                  {parseFloat(vaultBalance).toFixed(2)} USD₮0
+                </div>
               </div>
               <div className="balance-card">
                 <div className="balance-label">Your Shares</div>
-                <div className="balance-value">{parseFloat(userShares).toFixed(2)}</div>
+                <div className="balance-value">
+                  {parseFloat(userShares).toFixed(2)}
+                </div>
               </div>
             </div>
 
@@ -226,7 +252,8 @@ export default function VaultPage() {
             <div className="action-card">
               <h2>Deposit Tokens</h2>
               <p className="action-description">
-                Deposit your USD₮0 tokens into the vault to start earning yields.
+                Deposit your USD₮0 tokens into the vault to start earning
+                yields.
               </p>
 
               {parseFloat(allowance) === 0 ? (
@@ -264,7 +291,11 @@ export default function VaultPage() {
                   </div>
                   <button
                     onClick={handleDeposit}
-                    disabled={loading || !depositAmount || parseFloat(depositAmount) <= 0}
+                    disabled={
+                      loading ||
+                      !depositAmount ||
+                      parseFloat(depositAmount) <= 0
+                    }
                     className="btn-primary"
                   >
                     {loading ? "Depositing..." : "Deposit"}
@@ -300,13 +331,20 @@ export default function VaultPage() {
                 </div>
                 <button
                   onClick={handleWithdraw}
-                  disabled={loading || !withdrawShares || parseFloat(withdrawShares) <= 0}
+                  disabled={
+                    loading ||
+                    !withdrawShares ||
+                    parseFloat(withdrawShares) <= 0
+                  }
                   className="btn-secondary"
                 >
                   {loading ? "Withdrawing..." : "Withdraw"}
                 </button>
               </div>
             )}
+
+            {/* APY Chart */}
+            <ApyChart />
 
             {/* Vault Info */}
             <div className="vault-info">
@@ -330,4 +368,3 @@ export default function VaultPage() {
     </Layout>
   );
 }
-

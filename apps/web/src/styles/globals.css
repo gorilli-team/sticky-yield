@@ -664,3 +664,120 @@ h1 {
   cursor: not-allowed;
 }
 
+/* APY Chart Styles */
+.apy-chart-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.apy-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.apy-chart-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.apy-chart-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+.apy-chart-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.apy-period-selector {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.apy-period-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.apy-period-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--primary);
+}
+
+.apy-period-active {
+  background: rgba(0, 112, 243, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.apy-chart-wrapper {
+  width: 100%;
+  min-height: 400px;
+}
+
+.apy-chart-loading,
+.apy-chart-error,
+.apy-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--text-secondary);
+}
+
+.apy-chart-error {
+  color: var(--secondary);
+}
+
+.apy-pool-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.apy-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.apy-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.apy-legend-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.apy-legend-value {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-left: 0.25rem;
+}
+
