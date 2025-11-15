@@ -1017,7 +1017,7 @@ h1 {
 }
 
 .vault-header-section {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .back-button {
@@ -1035,6 +1035,7 @@ h1 {
 }
 
 .vault-title {
+  text-align: left;
   margin-top: 1rem;
 }
 
@@ -1046,8 +1047,9 @@ h1 {
 }
 
 .vault-subtitle {
-  color: var(--text-secondary);
-  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-size: 2rem;
+  font-weight: 700;
   margin-top: 0.5rem;
 }
 

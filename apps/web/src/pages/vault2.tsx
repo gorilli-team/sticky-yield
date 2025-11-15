@@ -649,14 +649,8 @@ export default function VaultPage() {
     <Layout>
       <div className="vault-page-container">
         <div className="vault-header-section">
-          <button onClick={() => router.push("/")} className="back-button">
-            ← Back to Yields
-          </button>
           <div className="vault-title">
-            <h1>USD₮0 Yield Vault</h1>
-            <p className="vault-subtitle">
-              Automated yield optimization on HyperEVM
-            </p>
+            <p className="vault-subtitle">USD₮0 Yield Vault </p>
           </div>
         </div>
 
