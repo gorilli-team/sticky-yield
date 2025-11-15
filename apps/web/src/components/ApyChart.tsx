@@ -73,43 +73,63 @@ const ApyChart: React.FC = () => {
         setPools(poolsData);
 
         // Transform data for chart
-        // Create a map of timestamps to data points
-        const timestampMap = new Map<
-          string,
-          { data: ApyDataPoint; rawTime: number }
-        >();
-
+        // Collect all unique timestamps from all pools
+        const allTimestamps = new Set<string>();
         poolsData.forEach((pool) => {
           pool.history.forEach((point) => {
-            const timestamp = new Date(point.timestamp).toISOString();
-            const rawTime = new Date(point.timestamp).getTime();
-
-            if (!timestampMap.has(timestamp)) {
-              timestampMap.set(timestamp, {
-                data: {
-                  timestamp: new Date(point.timestamp).toLocaleString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                },
-                rawTime,
-              });
-            }
-            const entry = timestampMap.get(timestamp)!;
-            // Use pool address as key, but also store description for tooltip
-            entry.data[pool.pool_address] = point.total_apy;
-            entry.data[`${pool.pool_address}_desc`] = pool.description;
+            // Round to nearest minute for alignment
+            const date = new Date(point.timestamp);
+            date.setSeconds(0, 0);
+            allTimestamps.add(date.toISOString());
           });
         });
 
-        // Sort by timestamp (oldest first) using raw timestamp
-        const sortedData = Array.from(timestampMap.values())
-          .sort((a, b) => a.rawTime - b.rawTime)
-          .map((entry) => entry.data);
+        // Sort timestamps
+        const sortedTimestamps = Array.from(allTimestamps).sort();
 
-        setChartData(sortedData);
+        // Create data points for each timestamp
+        const chartDataPoints: ApyDataPoint[] = sortedTimestamps.map(
+          (isoString) => {
+            const timestamp = new Date(isoString);
+            const dataPoint: ApyDataPoint = {
+              timestamp: timestamp.toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            };
+
+            // For each pool, find data at this timestamp (or closest within 1 minute)
+            poolsData.forEach((pool) => {
+              const targetTime = timestamp.getTime();
+
+              // Find exact match or closest within 1 minute
+              let bestMatch: { point: any; diff: number } | null = null;
+
+              pool.history.forEach((point) => {
+                const pointTime = new Date(point.timestamp).getTime();
+                const diff = Math.abs(pointTime - targetTime);
+
+                // Within 1 minute (60000ms)
+                if (diff <= 60000) {
+                  if (!bestMatch || diff < bestMatch.diff) {
+                    bestMatch = { point, diff };
+                  }
+                }
+              });
+
+              if (bestMatch) {
+                dataPoint[pool.pool_address] = bestMatch.point.total_apy;
+                dataPoint[`${pool.pool_address}_desc`] = pool.description;
+              }
+            });
+
+            return dataPoint;
+          }
+        );
+
+        setChartData(chartDataPoints);
       } catch (err: any) {
         console.error("Error fetching APY data:", err);
         setError(err.message || "Failed to load APY data");
@@ -238,22 +258,15 @@ const ApyChart: React.FC = () => {
                   }}
                 />
                 {pools.map((pool, index) => (
-                  //   <Line
-                  //     key={pool.pool_address}
-                  //     type="monotone"
-                  //     dataKey={pool.pool_address}
-                  //     stroke={colors[index % colors.length]}
-                  //     strokeWidth={2}
-                  //     dot={{ fill: colors[index % colors.length], r: 1 }}
-                  //     name={pool.pool_address}
-                  //     activeDot={{ r: 5 }}
-                  //   />
                   <Line
-                    type="monotone"
                     key={pool.pool_address}
+                    type="monotone"
                     dataKey={pool.pool_address}
                     stroke={colors[index % colors.length]}
                     strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 5, fill: colors[index % colors.length] }}
+                    connectNulls={false}
                     name={pool.pool_address}
                   />
                 ))}
