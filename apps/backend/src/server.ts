@@ -39,25 +39,31 @@ async function startServer() {
     try {
       await connectDatabase();
     } catch (error) {
-      console.error("❌ Failed to connect to MongoDB:", error);
-      process.exit(1);
+      console.error("⚠️  Failed to connect to MongoDB:", error);
+      console.log(
+        "⚠️  Continuing without database - APY tracking will be disabled"
+      );
+      // Don't exit - allow server to start without database
     }
 
     // Start cron jobs (will skip if database not connected)
-    startCronJobs();
+    //this is already done in the deployed server
+    // startCronJobs();
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+      console.log(`🚀 Backend server running on port ${PORT}`);
       console.log(
         `📊 Test GlueX API at: http://localhost:${PORT}/test-gluex/test`
       );
-      console.log(`📈 APY tracking active (every minute)`);
       console.log(
         `🔌 Database status: ${
           getDatabaseStatus() ? "✅ Connected" : "❌ Disconnected"
         }`
       );
+      if (getDatabaseStatus()) {
+        console.log(`📈 APY tracking active (every minute)`);
+      }
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);
