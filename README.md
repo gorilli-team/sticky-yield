@@ -1,8 +1,8 @@
-# 🌟 GlueX Yield Optimizer
+# GlueX Yield Optimizer
 
 A sophisticated yield optimization platform built on GlueX Protocol. Automatically reallocates funds across whitelisted vaults to maximize returns.
 
-## 🏗️ Architecture
+## Architecture
 
 This is a **Turborepo monorepo** containing:
 
@@ -11,7 +11,7 @@ This is a **Turborepo monorepo** containing:
 - **`packages/contracts`**: Foundry Solidity smart contracts
 - **`packages/shared`**: Shared TypeScript types
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -37,7 +37,7 @@ This will start:
 - Frontend: http://localhost:3000
 - Backend: http://localhost:3001
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 gluex-yield-optimizer/
@@ -71,7 +71,7 @@ gluex-yield-optimizer/
         └── types/
 ```
 
-## 🛠️ Development
+## Development
 
 ### Frontend (Next.js)
 
@@ -119,7 +119,7 @@ Contracts:
 - **Whitelist**: Vault whitelist management
 - **Interfaces**: ERC20, ERC7540, and vault interfaces
 
-## 🔑 Environment Variables
+## Environment Variables
 
 ### Frontend (`apps/web/.env.local`)
 
@@ -146,7 +146,7 @@ RPC_URL=your_rpc_url
 ETHERSCAN_API_KEY=your_etherscan_key
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Test all packages
@@ -157,7 +157,7 @@ cd packages/contracts
 forge test -vvv
 ```
 
-## 📚 Key Features
+## Key Features
 
 1. **Automated Yield Optimization**: Continuously monitors and reallocates funds to highest-yielding vaults
 2. **Privy Wallet Integration**: Seamless wallet connection and authentication
@@ -168,18 +168,18 @@ forge test -vvv
 5. **Whitelist System**: Only approved vaults can receive allocations
 6. **Turborepo**: Fast, efficient monorepo builds
 
-## 🎯 Hackathon Acceptance Criteria
+## Hackathon Acceptance Criteria
 
-✅ **Node.js Backend**: Express API with GlueX integration  
-✅ **TypeScript**: Full TypeScript across frontend & backend  
-✅ **Next.js Frontend**: Modern React with SSR  
-✅ **Privy Login**: Wallet authentication implemented  
-✅ **GlueX Yields API**: Real-time yield data fetching  
-✅ **GlueX Router**: Optimal allocation calculation  
-✅ **ERC-7540 Vault**: OptimizerVault contract  
-✅ **Whitelist Contract**: Vault approval system  
+- **Node.js Backend**: Express API with GlueX integration  
+- **TypeScript**: Full TypeScript across frontend & backend  
+- **Next.js Frontend**: Modern React with SSR  
+- **Privy Login**: Wallet authentication implemented  
+- **GlueX Yields API**: Real-time yield data fetching  
+- **GlueX Router**: Optimal allocation calculation  
+- **ERC-7540 Vault**: OptimizerVault contract  
+- **Whitelist Contract**: Vault approval system  
 
-## 🚢 Deployment
+## Deployment
 
 ### Frontend (Vercel)
 
@@ -205,7 +205,7 @@ forge script script/Deploy.s.sol \
   --verify
 ```
 
-## 🤝 Contributing
+## Contributing
 
 This is a hackathon project. For production use, additional features needed:
 - Enhanced security audits
@@ -214,11 +214,11 @@ This is a hackathon project. For production use, additional features needed:
 - Rate limiting
 - Advanced rebalancing strategies
 
-## 📄 License
+## License
 
 MIT
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - GlueX Protocol for yield optimization infrastructure
 - Privy for wallet authentication

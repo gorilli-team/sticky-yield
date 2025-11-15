@@ -1,4 +1,4 @@
-# 🚀 Setup Guide
+# Setup Guide
 
 Complete setup instructions for the GlueX Yield Optimizer monorepo.
 
@@ -230,10 +230,10 @@ forge script script/Deploy.s.sol \
 
 ## Next Steps
 
-1. ✅ Set up all environment variables
-2. ✅ Run `pnpm dev` to start development
-3. ✅ Connect wallet using Privy
-4. 🎯 Start building features!
+1. Set up all environment variables
+2. Run `pnpm dev` to start development
+3. Connect wallet using Privy
+4. Start building features!
 
 ## Useful Commands
 
@@ -272,5 +272,4 @@ gluex-yield-optimizer/
 └── package.json      # Root package.json
 ```
 
-Happy hacking! 🎉
 
