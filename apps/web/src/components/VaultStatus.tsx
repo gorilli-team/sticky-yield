@@ -52,14 +52,9 @@ export default function VaultStatus({ yieldData }: VaultStatusProps) {
                 </p>
               )}
               <p className="chain">Chain: {pool.chain || "N/A"}</p>
-              <p className="token-address">
-                Pool: {pool.pool_address?.slice(0, 10)}...
-                {pool.pool_address?.slice(-8)}
-              </p>
+              <p className="token-address">Pool: {pool.pool_address}</p>
               {pool.input_token && (
-                <p className="token">
-                  Token: {pool.input_token.slice(0, 10)}...
-                </p>
+                <p className="token">Token: {pool.input_token}</p>
               )}
             </div>
           ))}

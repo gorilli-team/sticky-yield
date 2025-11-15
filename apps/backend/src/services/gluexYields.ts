@@ -104,7 +104,7 @@ export async function getBestYield(): Promise<YieldResponse> {
     // Example pools - add more pool addresses here
     const pools: HistoricalApyRequest[] = [
       {
-        description: "HYPURRFI - PT-hwHLP < > USD₮0",
+        description: "USD₮0 Hypurr",
         url: "https://app.hypurr.fi/markets/isolated/999/0x543DBF5C74C6fb7C14f62b1Ae010a3696e22E3A0",
         pool_address: "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
         chain: "hyperevm",
@@ -117,10 +117,17 @@ export async function getBestYield(): Promise<YieldResponse> {
         chain: "hyperevm",
       },
       {
-        //HYPURRFI - PT-hwHLP < > USD₮0
+        //Felix USD₮0
         description: "Felix USD₮0",
         url: "https://www.usefelix.xyz/vanilla/lend",
         pool_address: "0xfc5126377f0efc0041c0969ef9ba903ce67d151e",
+        chain: "hyperevm",
+      },
+      {
+        //Felix USD₮0 Frontier
+        description: "Felix USD₮0 Frontier",
+        url: "https://www.usefelix.xyz/frontier/lend",
+        pool_address: "0x9896a8605763106e57A51aa0a97Fe8099E806bb3",
         chain: "hyperevm",
       },
       // Add more pools here as needed
@@ -162,8 +169,11 @@ export async function getBestYield(): Promise<YieldResponse> {
         };
       });
 
+    // Sort pools by APY in descending order (highest first)
+    const sortedPools = validPools.sort((a, b) => b.apy - a.apy);
+
     return {
-      pools: validPools,
+      pools: sortedPools,
       timestamp: new Date().toISOString(),
       total_pools: pools.length,
       successful_fetches: validPools.length,

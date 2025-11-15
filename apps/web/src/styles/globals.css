@@ -126,8 +126,14 @@ h1 {
 
 .yields-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .yields-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .yield-card {
@@ -188,18 +194,21 @@ h1 {
 }
 
 .yield-card .token {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-family: monospace;
-  margin-top: 0.25rem;
-}
-
-.yield-card .token-address {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
   font-family: monospace;
   margin-top: 0.25rem;
   word-break: break-all;
+  line-height: 1.4;
+}
+
+.yield-card .token-address {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+  margin-top: 0.25rem;
+  word-break: break-all;
+  line-height: 1.4;
 }
 
 .api-response {
