@@ -23,11 +23,44 @@ export default function VaultStatus({ yieldData }: VaultStatusProps) {
           {yieldData.pools.map((pool: any, idx: number) => (
             <div key={idx} className="yield-card">
               <h3>
-                {pool.name || pool.pool_address?.slice(0, 10) + "..." || "Pool"}
+                {pool.description ||
+                  pool.name ||
+                  pool.pool_address?.slice(0, 10) + "..." ||
+                  "Pool"}
               </h3>
-              <p className="apy">APY: {pool.apy ? `${pool.apy}%` : "N/A"}</p>
-              <p className="tvl">TVL: {pool.tvl ? `$${pool.tvl}` : "N/A"}</p>
+              {pool.url && (
+                <a
+                  href={pool.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="pool-link"
+                >
+                  View Pool →
+                </a>
+              )}
+              <p className="apy">
+                Total APY: {pool.apy ? `${pool.apy.toFixed(2)}%` : "N/A"}
+              </p>
+              {pool.historic_apy !== undefined && (
+                <p className="apy-detail">
+                  Historic: {pool.historic_apy.toFixed(2)}%
+                </p>
+              )}
+              {pool.rewards_apy !== undefined && pool.rewards_apy > 0 && (
+                <p className="apy-detail">
+                  Rewards: {pool.rewards_apy.toFixed(2)}%
+                </p>
+              )}
               <p className="chain">Chain: {pool.chain || "N/A"}</p>
+              <p className="token-address">
+                Pool: {pool.pool_address?.slice(0, 10)}...
+                {pool.pool_address?.slice(-8)}
+              </p>
+              {pool.input_token && (
+                <p className="token">
+                  Token: {pool.input_token.slice(0, 10)}...
+                </p>
+              )}
             </div>
           ))}
         </div>

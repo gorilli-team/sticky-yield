@@ -5,18 +5,29 @@ const GLUEX_YIELD_API_BASE = "https://yield-api.gluex.xyz";
 export interface YieldPool {
   pool_address: string;
   chain: string;
-  apy?: number;
-  historical_apy?: any[];
+  description?: string; // Pool description
+  url?: string; // Pool URL
+  apy?: number; // Total APY (historic + rewards)
+  historic_apy?: number; // Historic yield APY
+  rewards_apy?: number; // Rewards APY
+  input_token?: string;
   name?: string;
   tvl?: number;
+  raw_gluex_response?: any; // Full raw response from GlueX API
 }
 
 export interface YieldResponse {
   pools: YieldPool[];
   timestamp: string;
+
+  total_pools?: number;
+  successful_fetches?: number;
+  raw_responses?: any[]; // All raw responses from GlueX
 }
 
 export interface HistoricalApyRequest {
+  description: string;
+  url: string;
   pool_address: string;
   chain: string;
 }
@@ -93,10 +104,31 @@ export async function getBestYield(): Promise<YieldResponse> {
     // Example pools - add more pool addresses here
     const pools: HistoricalApyRequest[] = [
       {
+        description: "HYPURRFI - PT-hwHLP < > USD₮0",
+        url: "https://app.hypurr.fi/markets/isolated/999/0x543DBF5C74C6fb7C14f62b1Ae010a3696e22E3A0",
         pool_address: "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
         chain: "hyperevm",
       },
+      {
+        //HYPURRFI - PT-hwHLP < > USD₮0
+        description: "HYPURRFI - PT-hwHLP < > USD₮0",
+        url: "https://app.hypurr.fi/markets/isolated/999/0x543DBF5C74C6fb7C14f62b1Ae010a3696e22E3A0",
+        pool_address: "0x543dbf5c74c6fb7c14f62b1ae010a3696e22e3a0",
+        chain: "hyperevm",
+      },
+      {
+        //HYPURRFI - PT-hwHLP < > USD₮0
+        description: "Felix USD₮0",
+        url: "https://www.usefelix.xyz/vanilla/lend",
+        pool_address: "0xfc5126377f0efc0041c0969ef9ba903ce67d151e",
+        chain: "hyperevm",
+      },
       // Add more pools here as needed
+      //   {
+      //     //https://app.hypurr.fi/markets/pooled/999/0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb
+      //     pool_address: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
+      //     chain: "hyperevm",
+      //   }
     ];
 
     console.log(`📊 Fetching yields for ${pools.length} pool(s)...`);
@@ -114,15 +146,28 @@ export async function getBestYield(): Promise<YieldResponse> {
     // Filter out failed requests and format response
     const validPools = results
       .filter((result) => result !== null)
-      .map((result, index) => ({
-        ...pools[index],
-        apy: result?.current_apy || 0,
-        historical_apy: result?.historical_data || [],
-      }));
+      .map((result, index) => {
+        // Extract APY from GlueX response structure
+        const historicApy = result?.historic_yield?.apy?.apy || 0;
+        const rewardsApy = result?.rewards_status?.rewards_yield?.apy || 0;
+        const totalApy = historicApy + rewardsApy;
+
+        return {
+          ...pools[index],
+          apy: totalApy,
+          historic_apy: historicApy,
+          rewards_apy: rewardsApy,
+          input_token: result?.historic_yield?.input_token,
+          raw_gluex_response: result, // Include full GlueX response
+        };
+      });
 
     return {
       pools: validPools,
       timestamp: new Date().toISOString(),
+      total_pools: pools.length,
+      successful_fetches: validPools.length,
+      raw_responses: results.filter((r) => r !== null), // All raw GlueX responses
     };
   } catch (error) {
     console.error("Error fetching GlueX yields:", error);
