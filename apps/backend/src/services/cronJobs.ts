@@ -1,8 +1,8 @@
-import cron from "node-cron";
+import cron, { ScheduledTask } from "node-cron";
 import { trackAllPoolsApy } from "./apyTracker";
-import { getDatabaseStatus } from "../config/database";
+import { getDatabaseStatus } from "./database";
 
-let apyTrackingJob: cron.ScheduledTask | null = null;
+let apyTrackingJob: ScheduledTask | null = null;
 
 /**
  * Start all cron jobs

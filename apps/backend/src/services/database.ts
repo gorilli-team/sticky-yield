@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ENV } from "../config/env";
 
 let isConnected = false;
 
@@ -8,12 +9,30 @@ export async function connectDatabase(): Promise<void> {
     return;
   }
 
-  const mongoUri = process.env.MONGODB_CONNECTION_STRING;
+  // Try both ENV object and process.env directly
+  const mongoUri =
+    ENV.MONGODB_CONNECTION_STRING || process.env.MONGODB_CONNECTION_STRING;
+
+  console.log("🔍 Checking MongoDB connection string...");
+  console.log(
+    `   ENV.MONGODB_CONNECTION_STRING: ${
+      ENV.MONGODB_CONNECTION_STRING ? "SET" : "NOT SET"
+    }`
+  );
+  console.log(
+    `   process.env.MONGODB_CONNECTION_STRING: ${
+      process.env.MONGODB_CONNECTION_STRING ? "SET" : "NOT SET"
+    }`
+  );
 
   if (!mongoUri) {
-    throw new Error(
-      "MONGODB_CONNECTION_STRING is not defined in environment variables"
+    console.warn(
+      "⚠️  MONGODB_CONNECTION_STRING is not defined - APY tracking will be disabled"
     );
+    console.warn(
+      "💡 Make sure your .env file contains: MONGODB_CONNECTION_STRING=your_connection_string"
+    );
+    return;
   }
 
   try {
