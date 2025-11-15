@@ -1,0 +1,157 @@
+paoloantoniorossi@Paolos-MacBook-Pro contracts % ./deploy.sh
+🚀 Starting Vault Deployment...
+
+✅ Environment variables loaded
+   Asset Token: 0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb
+   RPC URL: https://rpc.hypurrscan.io
+
+💰 Checking deployer balance...
+   Deployer Address: 0x20D235e98faae2C4ec4DBC835E77F37e4D6e01F4
+   Balance: 200000000000000000 wei
+
+🔍 Verifying asset token...
+   ✅ Asset token verified
+
+🔨 Building contracts...
+[⠊] Compiling...
+No files changed, compilation skipped
+   ✅ Build successful
+
+🚀 Deploying vault to HyperEVM...
+
+[⠊] Compiling...
+No files changed, compilation skipped
+Warning: EIP-3855 is not supported in one or more of the RPCs used.
+Unsupported Chain IDs: 999.
+Contracts deployed with a Solidity version equal or higher than 0.8.20 might not work properly.
+For more information, please see https://eips.ethereum.org/EIPS/eip-3855
+Traces:
+  [1301518] DeployScript::run()
+    ├─ [0] VM::envUint("PRIVATE_KEY") [staticcall]
+    │   └─ ← [Return] <env var value>
+    ├─ [0] VM::envAddress("ASSET_TOKEN") [staticcall]
+    │   └─ ← [Return] <env var value>
+    ├─ [0] console::log("=== Deployment Configuration ===") [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] VM::addr(<pk>) [staticcall]
+    │   └─ ← [Return] 0x20D235e98faae2C4ec4DBC835E77F37e4D6e01F4
+    ├─ [0] console::log("Deployer:", 0x20D235e98faae2C4ec4DBC835E77F37e4D6e01F4) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("Asset Token (USDT0):", 0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("================================") [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] VM::startBroadcast(<pk>)
+    │   └─ ← [Return]
+    ├─ [352500] → new Whitelist@0x4BAD0Fd58f6c1F8830361100c89d95d2c18DbcCc
+    │   └─ ← [Return] 1650 bytes of code
+    ├─ [0] console::log("\n[1/2] Whitelist deployed at:", Whitelist: [0x4BAD0Fd58f6c1F8830361100c89d95d2c18DbcCc]) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [863566] → new OptimizerVault@0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD
+    │   └─ ← [Return] 4298 bytes of code
+    ├─ [0] console::log("[2/2] OptimizerVault deployed at:", OptimizerVault: [0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD]) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("\n=== Deployment Summary ===") [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("Asset Token:", 0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("Vault Address:", OptimizerVault: [0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD]) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("Whitelist Contract:", Whitelist: [0x4BAD0Fd58f6c1F8830361100c89d95d2c18DbcCc]) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [283] OptimizerVault::OWNER() [staticcall]
+    │   └─ ← [Return] 0x20D235e98faae2C4ec4DBC835E77F37e4D6e01F4
+    ├─ [0] console::log("Owner:", 0x20D235e98faae2C4ec4DBC835E77F37e4D6e01F4) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [353] OptimizerVault::whitelistEnabled() [staticcall]
+    │   └─ ← [Return] false
+    ├─ [0] console::log("Whitelist Mode:", "DISABLED (permissionless)") [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("Initial Whitelisted Vaults:", 0) [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("\nNote: Owner can toggle whitelist mode with setWhitelistMode(bool)") [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] console::log("==========================") [staticcall]
+    │   └─ ← [Stop]
+    ├─ [0] VM::stopBroadcast()
+    │   └─ ← [Return]
+    └─ ← [Stop]
+
+
+Script ran successfully.
+
+== Logs ==
+  === Deployment Configuration ===
+  Deployer: 0x20D235e98faae2C4ec4DBC835E77F37e4D6e01F4
+  Asset Token (USDT0): 0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb
+  ================================
+  
+[1/2] Whitelist deployed at: 0x4BAD0Fd58f6c1F8830361100c89d95d2c18DbcCc
+  [2/2] OptimizerVault deployed at: 0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD
+  
+=== Deployment Summary ===
+  Asset Token: 0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb
+  Vault Address: 0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD
+  Whitelist Contract: 0x4BAD0Fd58f6c1F8830361100c89d95d2c18DbcCc
+  Owner: 0x20D235e98faae2C4ec4DBC835E77F37e4D6e01F4
+  Whitelist Mode: DISABLED (permissionless)
+  Initial Whitelisted Vaults: 0
+  
+Note: Owner can toggle whitelist mode with setWhitelistMode(bool)
+  ==========================
+
+## Setting up 1 EVM.
+==========================
+Simulated On-chain Traces:
+
+  [352500] → new Whitelist@0x4BAD0Fd58f6c1F8830361100c89d95d2c18DbcCc
+    └─ ← [Return] 1650 bytes of code
+
+  [863566] → new OptimizerVault@0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD
+    └─ ← [Return] 4298 bytes of code
+
+
+==========================
+
+Chain 999
+
+Estimated gas price: 0.304502353 gwei
+
+Estimated total gas used for script: 1854842
+
+Estimated amount required: 0.000564803753443226 HYPE
+
+==========================
+
+##### hyperliquid
+✅  [Success] Hash: 0xfcb492e8daac401899042ee20b3e118fef79092b16da1f31bbeb88ee23de9545
+Contract Address: 0x4BAD0Fd58f6c1F8830361100c89d95d2c18DbcCc
+Block: 19293626
+Paid: 0.000139334688792796 HYPE (432418 gas * 0.322222222 gwei)
+
+
+##### hyperliquid
+✅  [Success] Hash: 0x570d7535b392cb3fcf86df3e4b443994dfd206d56890b72e4faa5d494168f6b1
+Contract Address: 0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD
+Block: 19293626
+Paid: 0.000320412622001248 HYPE (994384 gas * 0.322222222 gwei)
+
+✅ Sequence #1 on hyperliquid | Total Paid: 0.000459747310794044 HYPE (1426802 gas * avg 0.322222222 gwei)
+                                                                           
+
+==========================
+
+ONCHAIN EXECUTION COMPLETE & SUCCESSFUL.
+
+Transactions saved to: /Users/paoloantoniorossi/Projects/Gorilli/Hackathons/sticky-yield/packages/contracts/broadcast/Deploy.s.sol/999/run-latest.json
+
+Sensitive values saved to: /Users/paoloantoniorossi/Projects/Gorilli/Hackathons/sticky-yield/packages/contracts/cache/Deploy.s.sol/999/run-latest.json
+
+
+✅ Deployment complete!
+
+📝 Next steps:
+   1. Save the vault address from the output above
+   2. Whitelist yield-bearing pools using: cast send <VAULT> 'updateWhitelist(address,bool)' <POOL> true
+   3. Update backend .env with VAULT_ADDRESS
+   4. Update frontend with vault address
