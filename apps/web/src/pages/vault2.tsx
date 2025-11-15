@@ -39,7 +39,12 @@ export default function VaultPage() {
 
   // Fund allocations
   const [allocations, setAllocations] = useState<
-    Array<{ pool: string; amount: string; description?: string }>
+    Array<{
+      pool: string;
+      amount: string;
+      balanceBN?: ethers.BigNumber;
+      description?: string;
+    }>
   >([]);
   const [loadingAllocations, setLoadingAllocations] = useState(false);
 
@@ -78,31 +83,24 @@ export default function VaultPage() {
         provider
       );
 
-      const [
-        balance,
-        vBalance,
-        shares,
-        allow,
-        totalAssets,
-        owner,
-        idleBalance,
-      ] = await Promise.all([
-        tokenContract.balanceOf(address),
-        vaultContract.balanceOf(address),
-        vaultContract.userShares(address),
-        tokenContract.allowance(address, VAULT_ADDRESS),
-        vaultContract.totalAssets(),
-        vaultContract.OWNER(),
-        tokenContract.balanceOf(VAULT_ADDRESS), // Idle balance in vault
-      ]);
+      const [balance, vBalance, shares, allow, owner, idleBalance] =
+        await Promise.all([
+          tokenContract.balanceOf(address),
+          vaultContract.balanceOf(address),
+          vaultContract.userShares(address),
+          tokenContract.allowance(address, VAULT_ADDRESS),
+          vaultContract.OWNER(),
+          tokenContract.balanceOf(VAULT_ADDRESS), // Idle balance in vault
+        ]);
 
       setTokenBalance(ethers.utils.formatUnits(balance, 6)); // Assuming 6 decimals
       setVaultBalance(ethers.utils.formatUnits(vBalance, 6));
       setUserShares(ethers.utils.formatUnits(shares, 6));
       setAllowance(ethers.utils.formatUnits(allow, 6));
-      setVaultTotalAssets(ethers.utils.formatUnits(totalAssets, 6));
       setVaultIdleBalance(ethers.utils.formatUnits(idleBalance, 6));
       setIsVaultOwner(address.toLowerCase() === owner.toLowerCase());
+      // Set initial total assets to idle balance (will be updated when allocations load)
+      setVaultTotalAssets(ethers.utils.formatUnits(idleBalance, 6));
     } catch (err: any) {
       console.error("Error loading balances:", err);
     }
@@ -260,10 +258,20 @@ export default function VaultPage() {
         .map((alloc) => ({
           pool: alloc.pool,
           amount: alloc.amount,
+          balanceBN: alloc.balanceBN,
           description: alloc.description || "Unknown Pool",
         }));
 
       setAllocations(allocationsWithData);
+
+      // Calculate total assets = idle balance + sum of allocated funds
+      const idleBalanceBN = await tokenContract.balanceOf(VAULT_ADDRESS);
+      const totalAllocatedBN = allocationsWithData.reduce(
+        (sum, alloc) => sum.add(alloc.balanceBN || ethers.BigNumber.from(0)),
+        ethers.BigNumber.from(0)
+      );
+      const calculatedTotalAssets = idleBalanceBN.add(totalAllocatedBN);
+      setVaultTotalAssets(ethers.utils.formatUnits(calculatedTotalAssets, 6));
     } catch (err: any) {
       console.error("Error loading allocations:", err);
     } finally {
@@ -918,7 +926,6 @@ export default function VaultPage() {
                   ) : (
                     <div className="deposit-section">
                       <div className="input-group">
-                        <label htmlFor="deposit-amount">Amount</label>
                         <div className="input-with-max">
                           <input
                             id="deposit-amount"
@@ -963,9 +970,6 @@ export default function VaultPage() {
                 <div className="action-card">
                   <div className="withdraw-section">
                     <div className="input-group">
-                      <label htmlFor="withdraw-amount">
-                        Shares to Withdraw
-                      </label>
                       <div className="input-with-max">
                         <input
                           id="withdraw-amount"
