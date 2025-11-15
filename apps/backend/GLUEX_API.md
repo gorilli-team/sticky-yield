@@ -14,9 +14,7 @@
 ```json
 {
   "pool_address": "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
-  "lp_token_address": "0x1234567890123456789012345678901234567890",
-  "chain": "hyperevm",
-  "input_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+  "chain": "hyperevm"
 }
 ```
 
@@ -27,9 +25,7 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{
     "pool_address": "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
-    "lp_token_address": "0x1234567890123456789012345678901234567890",
-    "chain": "hyperevm",
-    "input_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    "chain": "hyperevm"
   }'
 ```
 
@@ -49,12 +45,12 @@ Fetches current best yields from configured pools
 {
   "pools": [
     {
-      "pool_address": "0x...",
-      "lp_token_address": "0x...",
+      "pool_address": "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
       "chain": "hyperevm",
-      "input_token": "0x...",
       "apy": 5.23,
-      "historical_apy": []
+      "historical_apy": [],
+      "name": "Pool Name",
+      "tvl": 1000000
     }
   ],
   "timestamp": "2024-01-01T00:00:00.000Z"
@@ -70,9 +66,7 @@ Fetches historical yield data for multiple pools
   "pools": [
     {
       "pool_address": "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
-      "lp_token_address": "0x1234567890123456789012345678901234567890",
-      "chain": "hyperevm",
-      "input_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+      "chain": "hyperevm"
     }
   ]
 }
@@ -99,9 +93,11 @@ To add more pools, update the `pools` array in the `getBestYield()` function:
 const pools: HistoricalApyRequest[] = [
   {
     pool_address: "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
-    lp_token_address: "0x1234567890123456789012345678901234567890",
     chain: "hyperevm",
-    input_token: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  },
+  {
+    pool_address: "0xYourOtherPoolAddress",
+    chain: "hyperevm",
   },
   // Add more pools here
 ];

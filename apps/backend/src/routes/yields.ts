@@ -25,10 +25,8 @@ router.post("/historical", async (req: Request, res: Response) => {
         example: {
           pools: [
             {
-              pool_address: "0x...",
-              lp_token_address: "0x...",
+              pool_address: "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
               chain: "hyperevm",
-              input_token: "0x...",
             },
           ],
         },

@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import yields from "./routes/yields";
 import optimize from "./routes/optimize";
+import testGluex from "./routes/test-gluex";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use("/yields", yields);
 app.use("/optimize", optimize);
+app.use("/test-gluex", testGluex);
 
 // Health check
 app.get("/health", (req, res) => {
@@ -24,4 +26,5 @@ app.get("/health", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+  console.log(`📊 Test GlueX API at: http://localhost:${PORT}/test-gluex/test`);
 });
