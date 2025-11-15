@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./Interfaces.sol";
+import {IERC20, IVault} from "./Interfaces.sol";
 
 /**
  * @title OptimizerVault
@@ -10,8 +10,8 @@ import "./Interfaces.sol";
  */
 contract OptimizerVault {
     // State variables
-    address public immutable owner;
-    address public immutable asset; // Base asset (e.g., USDC)
+    address public immutable OWNER;
+    address public immutable ASSET; // Base asset (e.g., USDC)
 
     bool public whitelistEnabled; // Toggle between whitelist and permissionless mode
 
@@ -31,8 +31,12 @@ contract OptimizerVault {
 
     // Modifiers
     modifier onlyOwner() {
-        require(msg.sender == owner, "Not owner");
+        _checkOwner();
         _;
+    }
+
+    function _checkOwner() internal view {
+        require(msg.sender == OWNER, "Not owner");
     }
 
     /**
@@ -42,8 +46,8 @@ contract OptimizerVault {
      * @param _whitelistEnabled Whether to enable whitelist mode (true) or permissionless mode (false)
      */
     constructor(address _asset, address[] memory _whitelist, bool _whitelistEnabled) {
-        owner = msg.sender;
-        asset = _asset;
+        OWNER = msg.sender;
+        ASSET = _asset;
         whitelistEnabled = _whitelistEnabled;
 
         for (uint256 i = 0; i < _whitelist.length; i++) {
@@ -62,7 +66,7 @@ contract OptimizerVault {
 
         // Transfer assets from user
         require(
-            IERC20(asset).transferFrom(msg.sender, address(this), assets),
+            IERC20(ASSET).transferFrom(msg.sender, address(this), assets),
             "Transfer failed"
         );
 
@@ -97,7 +101,7 @@ contract OptimizerVault {
         totalShares -= shares;
 
         // Transfer assets to user
-        require(IERC20(asset).transfer(msg.sender, assets), "Transfer failed");
+        require(IERC20(ASSET).transfer(msg.sender, assets), "Transfer failed");
 
         emit Withdraw(msg.sender, shares, assets);
 
@@ -119,7 +123,7 @@ contract OptimizerVault {
         }
 
         // Approve and deposit into target vault
-        IERC20(asset).approve(vault, amount);
+        IERC20(ASSET).approve(vault, amount);
         IVault(vault).deposit(amount, address(this));
 
         vaultAllocations[vault] += amount;
@@ -190,7 +194,7 @@ contract OptimizerVault {
      * @return Total assets including allocated funds
      */
     function totalAssets() public view returns (uint256) {
-        uint256 idle = IERC20(asset).balanceOf(address(this));
+        uint256 idle = IERC20(ASSET).balanceOf(address(this));
         uint256 allocated = 0;
 
         for (uint256 i = 0; i < whitelistedVaults.length; i++) {

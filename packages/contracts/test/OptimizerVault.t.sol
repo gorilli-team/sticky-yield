@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "forge-std/Test.sol";
-import "../src/OptimizerVault.sol";
-import "../src/Interfaces.sol";
+import {Test} from "forge-std/Test.sol";
+import {OptimizerVault} from "../src/OptimizerVault.sol";
+import {IERC20} from "../src/Interfaces.sol";
 
 /**
  * @title MockERC20
@@ -113,11 +113,11 @@ contract OptimizerVaultTest is Test {
     }
 
     function testOwnerAddress() public {
-        assertEq(vault.owner(), owner);
+        assertEq(vault.OWNER(), owner);
     }
 
     function testAssetAddress() public {
-        assertEq(vault.asset(), address(token));
+        assertEq(vault.ASSET(), address(token));
     }
 
     function testTotalAssetsInitiallyZero() public {

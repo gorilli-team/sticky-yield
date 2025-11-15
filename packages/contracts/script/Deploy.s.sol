@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "forge-std/Script.sol";
-import "../src/OptimizerVault.sol";
-import "../src/whitelist.sol";
+import {Script, console} from "forge-std/Script.sol";
+import {OptimizerVault} from "../src/OptimizerVault.sol";
+import {Whitelist} from "../src/whitelist.sol";
 
 /**
  * @title DeployScript
@@ -36,7 +36,7 @@ contract DeployScript is Script {
         console.log("Asset Token:", assetToken);
         console.log("Vault Address:", address(vault));
         console.log("Whitelist Contract:", address(whitelist));
-        console.log("Owner:", vault.owner());
+        console.log("Owner:", vault.OWNER());
         console.log("Whitelist Mode:", vault.whitelistEnabled() ? "ENABLED (restricted)" : "DISABLED (permissionless)");
         console.log("Initial Whitelisted Vaults:", initialWhitelist.length);
         console.log("\nNote: Owner can toggle whitelist mode with setWhitelistMode(bool)");

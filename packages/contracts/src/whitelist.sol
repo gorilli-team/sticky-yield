@@ -14,8 +14,12 @@ contract Whitelist {
     event AddressWhitelisted(address indexed addr, bool status);
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "Not owner");
+        _checkOwner();
         _;
+    }
+
+    function _checkOwner() internal view {
+        require(msg.sender == owner, "Not owner");
     }
 
     constructor() {
