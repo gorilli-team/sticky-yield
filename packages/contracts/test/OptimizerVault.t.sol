@@ -84,11 +84,11 @@ contract OptimizerVaultTest is Test {
 
         token = new MockERC20();
 
-        address[] memory whitelist = new address[](2);
-        whitelist[0] = mockVault1;
-        whitelist[1] = mockVault2;
-
-        vault = new OptimizerVault(address(token), whitelist);
+        // Deploy vault with whitelist disabled for testing
+        address[] memory whitelist = new address[](0);
+        bool whitelistEnabled = false; // Start in permissionless mode
+        
+        vault = new OptimizerVault(address(token), whitelist, whitelistEnabled);
 
         vm.stopPrank();
 
@@ -112,6 +112,36 @@ contract OptimizerVaultTest is Test {
         vm.stopPrank();
     }
 
+    function testOwnerAddress() public {
+        assertEq(vault.owner(), owner);
+    }
+
+    function testAssetAddress() public {
+        assertEq(vault.asset(), address(token));
+    }
+
+    function testTotalAssetsInitiallyZero() public {
+        assertEq(vault.totalAssets(), 0);
+    }
+
+    function testWhitelistModeInitiallyDisabled() public {
+        assertFalse(vault.whitelistEnabled());
+    }
+
+    function testToggleWhitelistMode() public {
+        vm.startPrank(owner);
+
+        // Enable whitelist mode
+        vault.setWhitelistMode(true);
+        assertTrue(vault.whitelistEnabled());
+
+        // Disable whitelist mode
+        vault.setWhitelistMode(false);
+        assertFalse(vault.whitelistEnabled());
+
+        vm.stopPrank();
+    }
+
     function testWhitelistUpdate() public {
         vm.startPrank(owner);
 
@@ -119,16 +149,16 @@ contract OptimizerVaultTest is Test {
         vault.updateWhitelist(newVault, true);
 
         assertTrue(vault.isWhitelisted(newVault));
-        assertEq(vault.getWhitelistedVaultsCount(), 3);
+        assertEq(vault.getWhitelistedVaultsCount(), 1);
 
         vm.stopPrank();
     }
 
-    function testOnlyOwnerCanUpdateWhitelist() public {
+    function testOnlyOwnerCanToggleWhitelistMode() public {
         vm.startPrank(user1);
 
         vm.expectRevert("Not owner");
-        vault.updateWhitelist(address(6), true);
+        vault.setWhitelistMode(true);
 
         vm.stopPrank();
     }

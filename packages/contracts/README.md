@@ -28,15 +28,33 @@ forge test -vvv  # verbose output
 
 ## Deploy
 
-```bash
-# Set environment variables
-export PRIVATE_KEY=your_private_key
-export ASSET_TOKEN=0x...  # USDC or other base asset
-export RPC_URL=your_rpc_url
+### Quick Deployment
 
-# Deploy
-forge script script/Deploy.s.sol --rpc-url $RPC_URL --broadcast
+For USD₮0 token on HyperEVM:
+
+```bash
+# 1. Configure environment
+cp env.example .env
+# Edit .env with your PRIVATE_KEY and settings
+
+# 2. Deploy using the helper script
+./deploy.sh
+
+# Or deploy manually:
+forge script script/Deploy.s.sol:DeployScript \
+  --rpc-url hyperevm \
+  --broadcast \
+  -vvvv
 ```
+
+See `DEPLOYMENT.md` for detailed instructions and `../DEPLOYMENT_QUICKSTART.md` for a quick start guide.
+
+### Environment Variables
+
+Required:
+- `PRIVATE_KEY` - Deployer private key
+- `ASSET_TOKEN` - Token address (default: `0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb` for USD₮0)
+- `HYPEREVM_RPC_URL` - HyperEVM RPC endpoint
 
 ## Contracts
 

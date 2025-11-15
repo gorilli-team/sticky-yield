@@ -5,13 +5,15 @@ import "./Interfaces.sol";
 
 /**
  * @title OptimizerVault
- * @dev Yield optimizer vault that allocates funds across whitelisted vaults
- * @notice Simplified implementation for hackathon - production would need more safety checks
+ * @dev Yield optimizer vault with optional whitelist mode
+ * @notice Can operate in whitelist mode (restricted) or permissionless mode (any pool)
  */
 contract OptimizerVault {
     // State variables
     address public immutable owner;
     address public immutable asset; // Base asset (e.g., USDC)
+
+    bool public whitelistEnabled; // Toggle between whitelist and permissionless mode
 
     address[] public whitelistedVaults;
     mapping(address => bool) public isWhitelisted;
@@ -25,6 +27,7 @@ contract OptimizerVault {
     event Withdraw(address indexed user, uint256 shares, uint256 assets);
     event Rebalance(address indexed vault, uint256 amount);
     event WhitelistUpdated(address indexed vault, bool allowed);
+    event WhitelistModeChanged(bool enabled);
 
     // Modifiers
     modifier onlyOwner() {
@@ -36,10 +39,12 @@ contract OptimizerVault {
      * @dev Constructor
      * @param _asset Base asset token address
      * @param _whitelist Initial list of whitelisted vault addresses
+     * @param _whitelistEnabled Whether to enable whitelist mode (true) or permissionless mode (false)
      */
-    constructor(address _asset, address[] memory _whitelist) {
+    constructor(address _asset, address[] memory _whitelist, bool _whitelistEnabled) {
         owner = msg.sender;
         asset = _asset;
+        whitelistEnabled = _whitelistEnabled;
 
         for (uint256 i = 0; i < _whitelist.length; i++) {
             whitelistedVaults.push(_whitelist[i]);
@@ -100,13 +105,18 @@ contract OptimizerVault {
     }
 
     /**
-     * @dev Reallocate funds to a whitelisted vault
+     * @dev Reallocate funds to a vault (checks whitelist if enabled)
      * @param vault Target vault address
      * @param amount Amount to allocate
      */
     function reallocate(address vault, uint256 amount) external onlyOwner {
-        require(isWhitelisted[vault], "Vault not whitelisted");
+        require(vault != address(0), "Invalid vault address");
         require(amount > 0, "Zero amount");
+        
+        // Only check whitelist if whitelist mode is enabled
+        if (whitelistEnabled) {
+            require(isWhitelisted[vault], "Vault not whitelisted");
+        }
 
         // Approve and deposit into target vault
         IERC20(asset).approve(vault, amount);
@@ -126,8 +136,12 @@ contract OptimizerVault {
         address vault,
         uint256 amount
     ) external onlyOwner {
-        require(isWhitelisted[vault], "Vault not whitelisted");
         require(vaultAllocations[vault] >= amount, "Insufficient allocation");
+
+        // Only check whitelist if whitelist mode is enabled
+        if (whitelistEnabled) {
+            require(isWhitelisted[vault], "Vault not whitelisted");
+        }
 
         IVault(vault).withdraw(amount, address(this), address(this));
 
@@ -160,6 +174,15 @@ contract OptimizerVault {
         }
 
         emit WhitelistUpdated(vault, allowed);
+    }
+
+    /**
+     * @dev Toggle whitelist mode on/off
+     * @param enabled True to enable whitelist mode, false for permissionless mode
+     */
+    function setWhitelistMode(bool enabled) external onlyOwner {
+        whitelistEnabled = enabled;
+        emit WhitelistModeChanged(enabled);
     }
 
     /**
