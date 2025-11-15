@@ -130,6 +130,18 @@ export async function getBestYield(): Promise<YieldResponse> {
         pool_address: "0x9896a8605763106e57A51aa0a97Fe8099E806bb3",
         chain: "hyperevm",
       },
+      {
+        description: "Hypurr LHYPE < > USDXL",
+        url: "https://app.hypurr.fi/markets/isolated/999/0xAeedD5B6d42e0F077ccF3E7A78ff70b8cB217329",
+        pool_address: "0xAeedD5B6d42e0F077ccF3E7A78ff70b8cB217329",
+        chain: "hyperevm",
+      },
+      {
+        description: "Hypurr MHYPE",
+        url: "https://app.hypurr.fi/markets/isolated/999/0xE4847Cb23dAd9311b9907497EF8B39d00AC1DE14",
+        pool_address: "0xE4847Cb23dAd9311b9907497EF8B39d00AC1DE14",
+        chain: "hyperevm",
+      },
       // Add more pools here as needed
       //   {
       //     //https://app.hypurr.fi/markets/pooled/999/0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb
