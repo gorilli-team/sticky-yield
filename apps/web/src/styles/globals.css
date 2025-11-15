@@ -1,0 +1,160 @@
+:root {
+  --primary: #0070f3;
+  --secondary: #ff6b6b;
+  --bg: #0a0a0a;
+  --card-bg: #1a1a1a;
+  --text: #ffffff;
+  --text-secondary: #a0a0a0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: var(--card-bg);
+  border-bottom: 1px solid #333;
+  padding: 1rem 0;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.main {
+  flex: 1;
+  padding: 2rem 0;
+}
+
+.footer {
+  background: var(--card-bg);
+  border-top: 1px solid #333;
+  padding: 1rem 0;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.connect-section {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.connect-section p {
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+}
+
+.btn-primary, .btn-secondary {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0051cc;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #ff5252;
+}
+
+.wallet-info {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 8px;
+}
+
+.wallet-info p {
+  margin-bottom: 1rem;
+  font-family: monospace;
+}
+
+.vault-status {
+  margin-top: 2rem;
+}
+
+.vault-status h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.yields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.yield-card {
+  background: var(--card-bg);
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.yield-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-4px);
+}
+
+.yield-card h3 {
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+.yield-card .apy {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.yield-card .tvl {
+  color: var(--text-secondary);
+}
+
