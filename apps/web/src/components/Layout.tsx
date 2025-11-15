@@ -9,7 +9,7 @@ export default function Layout({ children }: LayoutProps) {
     <div className="layout">
       <header className="header">
         <div className="container">
-          <h2>🌟 GlueX Yield Optimizer</h2>
+          <h2>Sticky Yield</h2>
         </div>
       </header>
       <main className="main">{children}</main>

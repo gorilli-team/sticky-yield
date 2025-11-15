@@ -14,11 +14,28 @@ router.get("/best", async (req: Request, res: Response) => {
   }
 });
 
-// Get historical yields
-router.get("/historical", async (req: Request, res: Response) => {
+// Get historical yields for specific pools
+router.post("/historical", async (req: Request, res: Response) => {
   try {
-    const days = parseInt(req.query.days as string) || 7;
-    const data = await getHistoricalYields(days);
+    const { pools } = req.body;
+
+    if (!pools || !Array.isArray(pools)) {
+      return res.status(400).json({
+        error: "Missing pools array in request body",
+        example: {
+          pools: [
+            {
+              pool_address: "0x...",
+              lp_token_address: "0x...",
+              chain: "hyperevm",
+              input_token: "0x...",
+            },
+          ],
+        },
+      });
+    }
+
+    const data = await getHistoricalYields(pools);
     res.json(data);
   } catch (error) {
     console.error("Error fetching historical yields:", error);

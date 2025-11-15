@@ -1,4 +1,4 @@
-# GlueX Yield Optimizer
+# Sticky Yield
 
 A sophisticated yield optimization platform built on GlueX Protocol. Automatically reallocates funds across whitelisted vaults to maximize returns.
 
@@ -40,7 +40,7 @@ This will start:
 ## Project Structure
 
 ```
-gluex-yield-optimizer/
+sticky-yield/
 ├── apps/
 │   ├── web/                 # Next.js frontend
 │   │   ├── src/

@@ -25,8 +25,11 @@ export async function calculateOptimalAllocation(
   totalAmount: string,
   yieldData: YieldResponse
 ): Promise<OptimalAllocation> {
-  // Sort pools by APY (highest first)
-  const sortedPools = [...yieldData.pools].sort((a, b) => b.apy - a.apy);
+  // Filter out pools without APY and sort by APY (highest first)
+  const validPools = yieldData.pools.filter((pool) => pool.apy !== undefined);
+  const sortedPools = [...validPools].sort(
+    (a, b) => (b.apy ?? 0) - (a.apy ?? 0)
+  );
 
   // Take top 3 vaults
   const topVaults = sortedPools.slice(0, 3);
@@ -39,12 +42,12 @@ export async function calculateOptimalAllocation(
   const allocation = 1 / topVaults.length;
   const amount = parseFloat(totalAmount);
 
-  const allocations: AllocationStrategy[] = topVaults.map((vault) => ({
-    vaultAddress: vault.vault_address,
-    vaultName: vault.vault_name,
+  const allocations: AllocationStrategy[] = topVaults.map((vault: any) => ({
+    vaultAddress: vault.vaultAddress, // Changed from vault_address
+    vaultName: vault.vaultName, // Changed from vault_name
     amount: (amount * allocation).toFixed(6),
     percentage: allocation * 100,
-    expectedApy: vault.apy,
+    expectedApy: vault.apy ?? 0, // Provide default value if undefined
   }));
 
   // Calculate weighted APY

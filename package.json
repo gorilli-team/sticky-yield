@@ -1,5 +1,5 @@
 {
-  "name": "gluex-yield-optimizer",
+  "name": "sticky-yield",
   "private": true,
   "version": "1.0.0",
   "workspaces": [
