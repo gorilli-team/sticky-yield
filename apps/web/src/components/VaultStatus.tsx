@@ -64,6 +64,14 @@ export default function VaultStatus({ yieldData }: VaultStatusProps) {
                   <p className="token-address-main">Token: {token}</p>
                   <p className="chain">Chain: {bestPool.chain || "N/A"}</p>
 
+                  {/* Deposit button for the specific token */}
+                  {token.toLowerCase() ===
+                    "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb" && (
+                    <a href="/vault" className="deposit-vault-button">
+                      💰 Deposit in Vault
+                    </a>
+                  )}
+
                   {/* Best Pool Option */}
                   <div className="pool-option best">
                     <div className="pool-option-header">
