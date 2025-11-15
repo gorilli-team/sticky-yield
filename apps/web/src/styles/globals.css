@@ -1251,6 +1251,43 @@ h1 {
   display: inline-block;
 }
 
+.tx-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  font-weight: 500;
+  margin-right: 0.25rem;
+}
+
+.tx-initiator {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+  width: 140px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.tx-hash {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+  text-decoration: none;
+  width: 140px;
+  flex-shrink: 0;
+  display: inline-block;
+  transition: color 0.2s;
+}
+
+.tx-hash:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.tx-hash:hover .tx-label {
+  color: var(--primary);
+}
+
 .tx-time {
   font-size: 0.85rem;
   color: var(--text-secondary);

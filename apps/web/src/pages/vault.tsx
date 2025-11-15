@@ -789,6 +789,22 @@ export default function VaultPage() {
                           <span className="tx-amount">
                             ${formatNumber(tx.amount)}
                           </span>
+                          {tx.user && (
+                            <span className="tx-initiator" title={tx.user}>
+                              <span className="tx-label">Performed by:</span>{" "}
+                              {formatAddress(tx.user)}
+                            </span>
+                          )}
+                          <a
+                            href={`https://www.hyperscan.com/tx/${tx.txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="tx-hash"
+                            title={tx.txHash}
+                          >
+                            <span className="tx-label">Hash:</span>{" "}
+                            {formatAddress(tx.txHash)}
+                          </a>
                           <span className="tx-time">
                             {tx.timestamp.toLocaleDateString()}
                           </span>
