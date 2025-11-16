@@ -1,5 +1,6 @@
 import axios from "axios";
 import { TRACKED_POOLS } from "./apyTracker";
+import { ENV } from "../config/env";
 
 const GLUEX_YIELD_API_BASE = "https://yield-api.gluex.xyz";
 
@@ -14,6 +15,7 @@ export interface YieldPool {
   input_token?: string;
   name?: string;
   tvl?: number;
+  tvl_usd?: number;
   raw_gluex_response?: any; // Full raw response from GlueX API
 }
 
@@ -113,32 +115,62 @@ export async function getBestYield(): Promise<YieldResponse> {
 
     console.log(`📊 Fetching yields for ${pools.length} pool(s)...`);
 
-    // Fetch APY for all pools
-    const poolPromises = pools.map((pool) =>
-      getPoolHistoricalApy(pool.pool_address, pool.chain).catch((err) => {
-        console.error(`Failed to fetch pool ${pool.pool_address}:`, err);
-        return null;
-      })
-    );
+    // Fetch APY and TVL for all pools in parallel
+    const poolPromises = pools.map(async (pool) => {
+      try {
+        const [apyResult, tvlResult] = await Promise.all([
+          getPoolHistoricalApy(pool.pool_address, pool.chain).catch((err) => {
+            console.error(
+              `Failed to fetch APY for pool ${pool.pool_address}:`,
+              err
+            );
+            return null;
+          }),
+          getPoolTvl(pool.pool_address, pool.chain).catch((err) => {
+            console.error(
+              `Failed to fetch TVL for pool ${pool.pool_address}:`,
+              err
+            );
+            return null;
+          }),
+        ]);
+
+        return { apyResult, tvlResult, pool };
+      } catch (err) {
+        console.error(
+          `Failed to fetch data for pool ${pool.pool_address}:`,
+          err
+        );
+        return { apyResult: null, tvlResult: null, pool };
+      }
+    });
 
     const results = await Promise.all(poolPromises);
 
     // Filter out failed requests and format response
     const validPools = results
-      .filter((result) => result !== null)
-      .map((result, index) => {
+      .filter((result) => result.apyResult !== null)
+      .map((result) => {
+        const { apyResult, tvlResult, pool } = result;
+
         // Extract APY from GlueX response structure
-        const historicApy = result?.historic_yield?.apy?.apy || 0;
-        const rewardsApy = result?.rewards_status?.rewards_yield?.apy || 0;
+        const historicApy = apyResult?.historic_yield?.apy?.apy || 0;
+        const rewardsApy = apyResult?.rewards_status?.rewards_yield?.apy || 0;
         const totalApy = historicApy + rewardsApy;
 
+        // Extract TVL from GlueX response structure
+        const tvl = tvlResult?.tvl?.tvl || null;
+        const tvlUsd = tvlResult?.tvl?.tvl_usd || null;
+
         return {
-          ...pools[index],
+          ...pool,
           apy: totalApy,
           historic_apy: historicApy,
           rewards_apy: rewardsApy,
-          input_token: result?.historic_yield?.input_token,
-          raw_gluex_response: result, // Include full GlueX response
+          input_token: apyResult?.historic_yield?.input_token,
+          tvl: tvl,
+          tvl_usd: tvlUsd,
+          raw_gluex_response: apyResult, // Include full GlueX response
         };
       });
 
@@ -155,6 +187,55 @@ export async function getBestYield(): Promise<YieldResponse> {
   } catch (error) {
     console.error("Error fetching GlueX yields:", error);
     throw new Error("Failed to fetch yield data from GlueX");
+  }
+}
+
+/**
+ * Fetch TVL for a specific pool
+ *
+ * @param poolAddress - The pool contract address
+ * @param chain - The blockchain network (e.g., "hyperevm")
+ * @param lpTokenAddress - Optional LP token address (can be placeholder)
+ */
+export async function getPoolTvl(
+  poolAddress: string,
+  chain: string,
+  lpTokenAddress: string = "0x1234567890123456789012345678901234567890"
+): Promise<any> {
+  const requestData = {
+    pool_address: poolAddress,
+    lp_token_address: lpTokenAddress,
+    chain: chain,
+  };
+
+  try {
+    const headers: any = {
+      "Content-Type": "application/json",
+    };
+
+    // Add API key if available
+    if (ENV.GLUEX_API_KEY) {
+      headers["X-API-Key"] = ENV.GLUEX_API_KEY;
+    }
+
+    const response = await axios.post(
+      `${GLUEX_YIELD_API_BASE}/tvl`,
+      requestData,
+      { headers }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        `❌ Failed to fetch TVL for pool ${poolAddress}:`,
+        error.response?.data
+      );
+    } else {
+      console.error(`❌ Error fetching TVL for pool ${poolAddress}:`, error);
+    }
+    // Return null instead of throwing to allow graceful degradation
+    return null;
   }
 }
 

@@ -4,7 +4,8 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 import Layout from "@/components/Layout";
 import ApyChart from "@/components/ApyChart";
-import { getLatestApy } from "@/lib/api";
+import TvlChart from "@/components/TvlChart";
+import { getLatestApy, getBestYield } from "@/lib/api";
 import {
   VAULT_ADDRESS,
   ASSET_TOKEN,
@@ -106,9 +107,41 @@ export default function VaultPage() {
     }
   };
 
-  // Load best APY pool
+  // Load best APY pool - use real-time data from GlueX API (includes TVL)
   const loadBestPool = async () => {
     try {
+      // First try to get real-time data from GlueX API (includes TVL)
+      try {
+        const realTimeData = await getBestYield();
+
+        if (realTimeData.pools) {
+          // Filter pools for the asset token and find the one with highest APY
+          const tokenPools = realTimeData.pools.filter(
+            (pool: any) =>
+              pool.input_token?.toLowerCase() === ASSET_TOKEN.toLowerCase()
+          );
+
+          if (tokenPools.length > 0) {
+            // Sort by apy descending and get the first one
+            const best = tokenPools.sort(
+              (a: any, b: any) => (b.apy || 0) - (a.apy || 0)
+            )[0];
+            // Map to expected format (apy -> total_apy for consistency, includes TVL)
+            setBestPool({
+              ...best,
+              total_apy: best.apy,
+            });
+            return;
+          }
+        }
+      } catch (realTimeError) {
+        console.warn(
+          "Failed to fetch real-time APY, trying database fallback:",
+          realTimeError
+        );
+      }
+
+      // Fallback to database data if real-time fetch fails (no TVL in database)
       const response = await getLatestApy();
       if (response.success && response.pools) {
         // Filter pools for the asset token and find the one with highest APY
@@ -769,6 +802,11 @@ export default function VaultPage() {
                 <ApyChart />
               </div>
 
+              {/* TVL Chart */}
+              <div className="vault-section-card">
+                <TvlChart />
+              </div>
+
               {/* Transaction History */}
               <div className="vault-section-card">
                 <h3>Recent Transactions</h3>
@@ -859,6 +897,14 @@ export default function VaultPage() {
                     </span>
                   </div>
                   <p className="best-pool-name">{bestPool.description}</p>
+                  {bestPool.tvl_usd && (
+                    <div className="pool-tvl">
+                      <span className="tvl-label">TVL:</span>
+                      <span className="tvl-value">
+                        ${formatNumber(bestPool.tvl_usd.toString(), 0)}
+                      </span>
+                    </div>
+                  )}
                   {bestPool.url && (
                     <a
                       href={bestPool.url}

@@ -39,6 +39,15 @@ const apyHistorySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // TVL data
+    tvl: {
+      type: Number,
+      default: null,
+    },
+    tvl_usd: {
+      type: Number,
+      default: null,
+    },
     // Raw GlueX response for debugging
     raw_response: {
       type: mongoose.Schema.Types.Mixed,
@@ -81,6 +90,8 @@ export interface IApyHistory {
   total_apy: number;
   historic_apy: number;
   rewards_apy: number;
+  tvl?: number;
+  tvl_usd?: number;
   raw_response?: any;
   success: boolean;
   error_message?: string;

@@ -1,5 +1,5 @@
 import { ApyHistory } from "../models/ApyHistory";
-import { getPoolHistoricalApy } from "./gluexYields";
+import { getPoolHistoricalApy, getPoolTvl } from "./gluexYields";
 
 // Pool configuration
 export interface PoolConfig {
@@ -79,17 +79,30 @@ export const TRACKED_POOLS: PoolConfig[] = [
 async function trackPoolApy(pool: PoolConfig): Promise<void> {
   try {
     console.log(
-      `📊 Tracking APY for ${pool.description} (${pool.pool_address})`
+      `📊 Tracking APY and TVL for ${pool.description} (${pool.pool_address})`
     );
 
-    // Fetch APY from GlueX
-    const result = await getPoolHistoricalApy(pool.pool_address, pool.chain);
+    // Fetch APY and TVL from GlueX in parallel
+    const [apyResult, tvlResult] = await Promise.all([
+      getPoolHistoricalApy(pool.pool_address, pool.chain).catch((err) => {
+        console.error(`Failed to fetch APY for ${pool.description}:`, err);
+        return null;
+      }),
+      getPoolTvl(pool.pool_address, pool.chain).catch((err) => {
+        console.error(`Failed to fetch TVL for ${pool.description}:`, err);
+        return null;
+      }),
+    ]);
 
     // Extract APY values
-    const historicApy = result?.historic_yield?.apy?.apy || 0;
-    const rewardsApy = result?.rewards_status?.rewards_yield?.apy || 0;
+    const historicApy = apyResult?.historic_yield?.apy?.apy || 0;
+    const rewardsApy = apyResult?.rewards_status?.rewards_yield?.apy || 0;
     const totalApy = historicApy + rewardsApy;
-    const inputToken = result?.historic_yield?.input_token;
+    const inputToken = apyResult?.historic_yield?.input_token;
+
+    // Extract TVL values
+    const tvl = tvlResult?.tvl?.tvl || null;
+    const tvlUsd = tvlResult?.tvl?.tvl_usd || null;
 
     // Save to database
     const apyRecord = new ApyHistory({
@@ -101,19 +114,26 @@ async function trackPoolApy(pool: PoolConfig): Promise<void> {
       total_apy: totalApy,
       historic_apy: historicApy,
       rewards_apy: rewardsApy,
-      raw_response: result,
+      tvl: tvl,
+      tvl_usd: tvlUsd,
+      raw_response: apyResult,
       success: true,
       timestamp: new Date(),
     });
 
     await apyRecord.save();
 
+    const tvlInfo = tvlUsd
+      ? `, TVL: $${tvlUsd.toLocaleString(undefined, {
+          maximumFractionDigits: 0,
+        })}`
+      : "";
     console.log(
       `✅ Saved APY for ${pool.description}: ${totalApy.toFixed(
         2
       )}% (Historic: ${historicApy.toFixed(2)}%, Rewards: ${rewardsApy.toFixed(
         2
-      )}%)`
+      )}%)${tvlInfo}`
     );
   } catch (error: any) {
     console.error(

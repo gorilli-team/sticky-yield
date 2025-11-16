@@ -93,9 +93,69 @@ router.get("/stats/:poolAddress", async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/apy/tvl/token/:tokenAddress
+ * Get TVL history for all pools for a specific token
+ * Query params: hours (default: 24)
+ * NOTE: This route must come BEFORE /token/:tokenAddress to avoid route conflicts
+ */
+router.get("/tvl/token/:tokenAddress", async (req: Request, res: Response) => {
+  try {
+    const { tokenAddress } = req.params;
+    const hours = parseInt(req.query.hours as string) || 24;
+
+    // Get latest APY to find all pools for this token
+    const latestApy = await getLatestApy();
+    const tokenPools = latestApy.filter(
+      (pool) => pool.input_token?.toLowerCase() === tokenAddress.toLowerCase()
+    );
+
+    if (tokenPools.length === 0) {
+      return res.json({
+        success: true,
+        token_address: tokenAddress,
+        hours,
+        pools: [],
+        message: "No pools found for this token",
+      });
+    }
+
+    // Get TVL history for each pool
+    const poolsWithHistory = await Promise.all(
+      tokenPools.map(async (pool) => {
+        const history = await getPoolApyHistory(pool.pool_address, hours);
+        // Extract only TVL data from history
+        const tvlHistory = history.map((h: any) => ({
+          timestamp: h.timestamp,
+          tvl_usd: h.tvl_usd || null,
+        }));
+        return {
+          ...pool,
+          history: tvlHistory,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      token_address: tokenAddress,
+      hours,
+      count: poolsWithHistory.length,
+      pools: poolsWithHistory,
+    });
+  } catch (error: any) {
+    console.error("Error fetching token TVL history:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch token TVL history",
+    });
+  }
+});
+
+/**
  * GET /api/apy/token/:tokenAddress
  * Get APY history for all pools for a specific token
  * Query params: hours (default: 24)
+ * NOTE: This route must come AFTER /tvl/token/:tokenAddress to avoid route conflicts
  */
 router.get("/token/:tokenAddress", async (req: Request, res: Response) => {
   try {
