@@ -6,8 +6,12 @@ import {
   getMarketAverageHistory,
   getLatestMarketAverage,
 } from "../services/apyTracker";
-import { getVaultTvlHistory, getLatestVaultTvl } from "../services/vaultTracker";
+import {
+  getVaultTvlHistory,
+  getLatestVaultTvl,
+} from "../services/vaultTracker";
 import { getCronJobsStatus } from "../services/cronJobs";
+import { getDatabaseStatus } from "../services/database";
 
 const router: Router = Router();
 
@@ -347,9 +351,25 @@ router.get("/market-average/history", async (req: Request, res: Response) => {
 router.get("/cron/status", (req: Request, res: Response) => {
   try {
     const status = getCronJobsStatus();
+    const envCheck = {
+      ENABLE_CRON_JOBS: process.env.ENABLE_CRON_JOBS || "not set",
+      NODE_ENV: process.env.NODE_ENV || "not set",
+      cronJobsEnabled:
+        process.env.ENABLE_CRON_JOBS === "true" ||
+        process.env.NODE_ENV === "production",
+      databaseConnected: getDatabaseStatus(),
+      requiredEnvVars: {
+        VAULT_ADDRESS: !!process.env.VAULT_ADDRESS,
+        ASSET_TOKEN: !!process.env.ASSET_TOKEN,
+        PRIVATE_KEY: !!process.env.PRIVATE_KEY,
+        HYPEREVM_RPC_URL: !!process.env.HYPEREVM_RPC_URL,
+      },
+    };
+
     res.json({
       success: true,
       cron_jobs: status,
+      environment: envCheck,
     });
   } catch (error: any) {
     res.status(500).json({

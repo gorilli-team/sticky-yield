@@ -53,6 +53,14 @@ async function startServer() {
     const enableCronJobs =
       process.env.ENABLE_CRON_JOBS === "true" ||
       process.env.NODE_ENV === "production";
+
+    console.log(`🔧 Cron jobs configuration:`);
+    console.log(
+      `   ENABLE_CRON_JOBS: ${process.env.ENABLE_CRON_JOBS || "not set"}`
+    );
+    console.log(`   NODE_ENV: ${process.env.NODE_ENV || "not set"}`);
+    console.log(`   Will start cron jobs: ${enableCronJobs}`);
+
     if (enableCronJobs) {
       startCronJobs();
     } else {

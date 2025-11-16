@@ -48,30 +48,102 @@ export function startCronJobs(): void {
 
   console.log("✅ Vault TVL tracking cron job started (runs every 5 minutes)");
 
-  // Vault automation - every hour
-  automationJob = cron.schedule("0 * * * *", async () => {
-    // Check database connection
-    if (!getDatabaseStatus()) {
-      console.error("⚠️  Skipping automation - database not connected");
-      return;
-    }
+  // Vault automation - every 5 minutes
+  // Note: node-cron doesn't handle unhandled promise rejections well,
+  // so we wrap everything in a promise that we explicitly catch
+  automationJob = cron.schedule("*/5 * * * *", () => {
+    // Wrap in immediate async function to handle promises properly
+    (async () => {
+      const now = new Date();
+      console.log(
+        `\n⏰ [CRON] Automation job triggered at ${now.toISOString()}`
+      );
 
-    try {
-      await runVaultAutomation();
-    } catch (error) {
-      console.error("❌ Error in automation cron job:", error);
-    }
+      try {
+        // Check database connection
+        const dbStatus = getDatabaseStatus();
+        console.log(
+          `   [CRON] Database status: ${
+            dbStatus ? "✅ Connected" : "❌ Disconnected"
+          }`
+        );
+        if (!dbStatus) {
+          console.error(
+            "⚠️  [CRON] Skipping automation - database not connected"
+          );
+          return;
+        }
+
+        // Check required environment variables
+        const requiredVars = {
+          VAULT_ADDRESS: process.env.VAULT_ADDRESS,
+          ASSET_TOKEN: process.env.ASSET_TOKEN,
+          PRIVATE_KEY: process.env.PRIVATE_KEY,
+        };
+
+        const missingVars = Object.entries(requiredVars)
+          .filter(([_, value]) => !value)
+          .map(([key]) => key);
+
+        if (missingVars.length > 0) {
+          console.error(
+            `⚠️  [CRON] Skipping automation - missing environment variables: ${missingVars.join(
+              ", "
+            )}`
+          );
+          return;
+        }
+
+        console.log(
+          `   [CRON] All checks passed, calling runVaultAutomation()...`
+        );
+        await runVaultAutomation();
+        console.log(
+          `✅ [CRON] Automation job completed successfully at ${new Date().toISOString()}`
+        );
+      } catch (error: any) {
+        console.error("❌ [CRON] Error in automation cron job:", error);
+        console.error("   [CRON] Error details:", error.message);
+        if (error.stack) {
+          console.error("   [CRON] Stack trace:", error.stack);
+        }
+        // Re-throw to ensure it's logged, but don't let it crash the cron scheduler
+      }
+    })().catch((error: any) => {
+      // Catch any unhandled promise rejections
+      console.error(
+        "❌ [CRON] Unhandled promise rejection in automation cron:",
+        error
+      );
+      console.error("   [CRON] This should not happen - check the code above");
+    });
   });
 
-  console.log("✅ Vault automation cron job started (runs every hour)");
+  console.log("✅ Vault automation cron job started (runs every 5 minutes)");
 
-  // Run once immediately on startup
+  // Verify the job was actually created
+  if (!automationJob) {
+    console.error("❌ Failed to create automation cron job!");
+  } else {
+    console.log("   ✓ Automation cron job object created successfully");
+  }
+
+  // Run once immediately on startup (after a delay)
   setTimeout(async () => {
     if (getDatabaseStatus()) {
       console.log("🚀 Running initial APY tracking...");
       await trackAllPoolsApy();
       console.log("🚀 Running initial vault TVL tracking...");
       await trackVaultTvl();
+      console.log("🚀 Running initial automation test...");
+      // Test automation once on startup to verify it works
+      try {
+        console.log("   [STARTUP] Testing automation...");
+        await runVaultAutomation();
+        console.log("   [STARTUP] ✅ Automation test completed");
+      } catch (error: any) {
+        console.error("   [STARTUP] ❌ Automation test failed:", error.message);
+      }
     }
   }, 5000); // Wait 5 seconds for everything to initialize
 }
@@ -115,7 +187,7 @@ export function getCronJobsStatus() {
     },
     vaultAutomation: {
       active: automationJob ? true : false,
-      schedule: "0 * * * *",
+      schedule: "*/5 * * * *",
       description: "Runs vault automation (reallocation logic)",
     },
   };
