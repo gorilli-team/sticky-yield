@@ -1329,6 +1329,17 @@ h1 {
   font-weight: 500;
 }
 
+.contract-link {
+  color: var(--primary);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.contract-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
 .monospace {
   font-family: monospace;
 }

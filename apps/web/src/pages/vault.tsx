@@ -972,7 +972,13 @@ export default function VaultPage() {
                             {formatAddress(tx.txHash)}
                           </a>
                           <span className="tx-time">
-                            {tx.timestamp.toLocaleDateString()}
+                            {tx.timestamp.toLocaleString(undefined, {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </span>
                         </div>
                         <a
@@ -995,15 +1001,27 @@ export default function VaultPage() {
                 <div className="contract-info">
                   <div className="info-row">
                     <span className="info-label">Vault Address</span>
-                    <span className="info-value monospace">
+                    <a
+                      href={`https://www.hyperscan.com/address/${VAULT_ADDRESS}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="info-value monospace contract-link"
+                      title={VAULT_ADDRESS}
+                    >
                       {formatAddress(VAULT_ADDRESS)}
-                    </span>
+                    </a>
                   </div>
                   <div className="info-row">
                     <span className="info-label">Asset Token</span>
-                    <span className="info-value monospace">
+                    <a
+                      href={`https://www.hyperscan.com/address/${ASSET_TOKEN}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="info-value monospace contract-link"
+                      title={ASSET_TOKEN}
+                    >
                       {formatAddress(ASSET_TOKEN)}
-                    </span>
+                    </a>
                   </div>
                   <div className="info-row">
                     <span className="info-label">Network</span>
