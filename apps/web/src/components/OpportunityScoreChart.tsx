@@ -173,7 +173,18 @@ const OpportunityScoreChart: React.FC = () => {
     <div className="apy-chart-container">
       <div className="apy-chart-header">
         <div className="apy-chart-title-section">
-          <h3 className="apy-chart-title">Opportunity Score Performance</h3>
+          <h3 className="apy-chart-title">
+            <Link
+              href="/opportunity-score"
+              style={{
+                color: "inherit",
+                textDecoration: "none",
+              }}
+              title="Learn about Opportunity Score"
+            >
+              Opportunity Score Performance
+            </Link>
+          </h3>
           <span className="apy-chart-subtitle">
             Track opportunity scores across all pools for USD₮0
           </span>

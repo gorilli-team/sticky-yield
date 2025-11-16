@@ -1664,9 +1664,79 @@ h1 {
   font-weight: 600;
 }
 
+/* Opportunity Score Page */
+.opportunity-score-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.back-link {
+  display: inline-block;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  transition: opacity 0.2s;
+}
+
+.back-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.page-header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.page-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.opportunity-score-content {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
 /* Opportunity Score Explanation Styles */
 .opportunity-score-explanation {
   padding: 1rem 0;
+}
+
+/* Opportunity Score Links */
+.opportunity-score-link {
+  color: var(--primary);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.opportunity-score-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.info-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.85rem;
+  margin-left: 0.25rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.info-link:hover {
+  opacity: 1;
+  text-decoration: underline;
 }
 
 .explanation-intro {

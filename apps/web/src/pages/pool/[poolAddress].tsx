@@ -229,7 +229,16 @@ export default function PoolPage() {
           </div>
 
           <div className="pool-stat-card">
-            <div className="stat-label">Opportunity Score</div>
+            <div className="stat-label">
+              Opportunity Score{" "}
+              <Link
+                href="/opportunity-score"
+                className="info-link"
+                title="Learn about Opportunity Score"
+              >
+                ℹ️
+              </Link>
+            </div>
             <div className="stat-value">
               {poolInfo.opportunity_score !== null &&
               poolInfo.opportunity_score !== undefined

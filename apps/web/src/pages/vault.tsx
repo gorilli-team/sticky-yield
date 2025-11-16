@@ -799,7 +799,16 @@ export default function VaultPage() {
                     </div>
                   </div>
                   <div className="stat-item">
-                    <div className="stat-label">Best Opportunity Score</div>
+                    <div className="stat-label">
+                      Best Opportunity Score{" "}
+                      <Link
+                        href="/opportunity-score"
+                        className="info-link"
+                        title="Learn about Opportunity Score"
+                      >
+                        ℹ️
+                      </Link>
+                    </div>
                     <div className="stat-value">
                       {bestPool
                         ? bestPool.opportunity_score !== null &&
@@ -847,8 +856,8 @@ export default function VaultPage() {
                   <div className="loading-state">Loading allocations...</div>
                 ) : (
                   <div className="allocations-table">
-                    {/* Show idle funds first */}
-                    {parseFloat(vaultIdleBalance) > 0 && (
+                    {/* Show idle funds first - only if significant */}
+                    {parseFloat(vaultIdleBalance) >= 0.009 && (
                       <div className="allocation-row allocation-idle">
                         <div className="allocation-info">
                           <div className="allocation-name">
@@ -863,45 +872,50 @@ export default function VaultPage() {
                         </div>
                       </div>
                     )}
-                    {/* Show pool allocations */}
-                    {allocations.length === 0
-                      ? parseFloat(vaultIdleBalance) === 0 && (
-                          <div className="empty-state">
-                            No funds allocated to pools yet.
-                          </div>
-                        )
-                      : allocations.map((alloc, index) => (
-                          <div key={index} className="allocation-row">
-                            <div className="allocation-info">
-                              <div className="allocation-name">
-                                <Link
-                                  href={`/pool/${alloc.pool}`}
-                                  className="allocation-link"
-                                  style={{
-                                    color: "var(--primary)",
-                                    textDecoration: "none",
-                                  }}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.textDecoration =
-                                      "underline";
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.textDecoration =
-                                      "none";
-                                  }}
-                                >
-                                  {alloc.description}
-                                </Link>
+                    {/* Show pool allocations - filter out very small amounts */}
+                    {(() => {
+                      const significantAllocations = allocations.filter(
+                        (alloc) => parseFloat(alloc.amount) >= 0.009
+                      );
+                      return significantAllocations.length === 0
+                        ? parseFloat(vaultIdleBalance) < 0.009 && (
+                            <div className="empty-state">
+                              No funds allocated to pools yet.
+                            </div>
+                          )
+                        : significantAllocations.map((alloc, index) => (
+                            <div key={index} className="allocation-row">
+                              <div className="allocation-info">
+                                <div className="allocation-name">
+                                  <Link
+                                    href={`/pool/${alloc.pool}`}
+                                    className="allocation-link"
+                                    style={{
+                                      color: "var(--primary)",
+                                      textDecoration: "none",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.textDecoration =
+                                        "underline";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.textDecoration =
+                                        "none";
+                                    }}
+                                  >
+                                    {alloc.description}
+                                  </Link>
+                                </div>
+                                <div className="allocation-address">
+                                  {formatAddress(alloc.pool)}
+                                </div>
                               </div>
-                              <div className="allocation-address">
-                                {formatAddress(alloc.pool)}
+                              <div className="allocation-amount">
+                                ${formatNumber(alloc.amount)}
                               </div>
                             </div>
-                            <div className="allocation-amount">
-                              ${formatNumber(alloc.amount)}
-                            </div>
-                          </div>
-                        ))}
+                          ));
+                    })()}
                   </div>
                 )}
               </div>
@@ -919,141 +933,6 @@ export default function VaultPage() {
               {/* TVL Chart */}
               <div className="vault-section-card">
                 <TvlChart />
-              </div>
-
-              {/* Opportunity Score Explanation */}
-              <div className="vault-section-card">
-                <h3>Understanding Opportunity Score</h3>
-                <div className="opportunity-score-explanation">
-                  <p className="explanation-intro">
-                    The Opportunity Score is a sophisticated metric that
-                    balances
-                    <strong> current yield potential</strong> with{" "}
-                    <strong>historical stability</strong> and{" "}
-                    <strong>pool capacity</strong>. It helps identify pools that
-                    offer sustainable, trustworthy returns rather than chasing
-                    temporary high yields.
-                  </p>
-
-                  <div className="formula-section">
-                    <h4>The Formula</h4>
-                    <div className="formula-block">
-                      <div className="formula-main">
-                        <span className="formula-label">Opportunity Score</span>
-                        <span className="formula-equals">=</span>
-                        <span className="formula-components">
-                          Stability-Adjusted APY × TVL Confidence Factor
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="formula-section">
-                    <h4>1. Stability-Adjusted APY</h4>
-                    <p className="formula-description">
-                      This component penalizes volatile pools and rewards stable
-                      yields:
-                    </p>
-                    <div className="formula-block">
-                      <div className="formula-main">
-                        <span className="formula-label">
-                          Stability-Adjusted APY
-                        </span>
-                        <span className="formula-equals">=</span>
-                        <span className="formula-components">
-                          APY<sub>avg 24h</sub> - (Risk Penalty × APY
-                          <sub>std 24h</sub>)
-                        </span>
-                      </div>
-                    </div>
-                    <ul className="formula-details">
-                      <li>
-                        <strong>
-                          APY<sub>avg 24h</sub>
-                        </strong>
-                        : Average APY over the last 24 hours (more reliable than
-                        a single point)
-                      </li>
-                      <li>
-                        <strong>
-                          APY<sub>std 24h</sub>
-                        </strong>
-                        : Standard deviation of APY (measures volatility/risk)
-                      </li>
-                      <li>
-                        <strong>Risk Penalty</strong>: Default = 1 (adjustable
-                        based on risk appetite)
-                      </li>
-                    </ul>
-                    <div className="formula-example">
-                      <strong>Example:</strong> Pool with 12% avg APY and 5% std
-                      deviation → Stability-Adjusted APY = 12% - (1 × 5%) = 7%
-                    </div>
-                  </div>
-
-                  <div className="formula-section">
-                    <h4>2. TVL Confidence Factor</h4>
-                    <p className="formula-description">
-                      This factor ensures the pool can safely absorb your assets
-                      without yield dilution:
-                    </p>
-                    <div className="formula-block">
-                      <div className="formula-main">
-                        <span className="formula-label">
-                          TVL Confidence Factor
-                        </span>
-                        <span className="formula-equals">=</span>
-                        <span className="formula-components">
-                          1 / (1 + e<sup>-k × (TVL/AssetSize - m)</sup>)
-                        </span>
-                      </div>
-                    </div>
-                    <ul className="formula-details">
-                      <li>
-                        <strong>TVL</strong>: Total Value Locked in the pool
-                      </li>
-                      <li>
-                        <strong>Asset Size</strong>: Your deployment amount
-                        (default: $100k)
-                      </li>
-                      <li>
-                        <strong>k</strong>: Sigmoid steepness (default: 20)
-                      </li>
-                      <li>
-                        <strong>m</strong>: Midpoint ratio (default: 0.1 = 10%
-                        of pool)
-                      </li>
-                    </ul>
-                    <div className="formula-example">
-                      <strong>Example:</strong> Pool with $50M TVL, your $100k
-                      assets → Ratio = 500 → Confidence Factor ≈ 100% (very
-                      safe)
-                    </div>
-                  </div>
-
-                  <div className="formula-section">
-                    <h4>Final Score Interpretation</h4>
-                    <ul className="formula-details">
-                      <li>
-                        <strong>Higher Score</strong>: Better opportunity
-                        (stable yield + large pool capacity)
-                      </li>
-                      <li>
-                        <strong>Negative Score</strong>: Set to 0 (risk-adjusted
-                        return is unacceptable)
-                      </li>
-                      <li>
-                        <strong>Score = 0</strong>: Either no data available or
-                        risk-adjusted return is negative
-                      </li>
-                    </ul>
-                    <p className="formula-note">
-                      <strong>Note:</strong> The system automatically allocates
-                      to pools with the highest opportunity scores, ensuring
-                      optimal risk-adjusted returns.
-                    </p>
-                  </div>
-                </div>
               </div>
 
               {/* Transaction History */}
@@ -1275,13 +1154,21 @@ export default function VaultPage() {
                         <h4>Sticky Yield Vault</h4>
                         <span className="best-apy">
                           {bestPool.opportunity_score !== null &&
-                          bestPool.opportunity_score !== undefined
-                            ? `Score: ${bestPool.opportunity_score.toFixed(
-                                2
-                              )} (${
-                                bestPool.total_apy?.toFixed(2) || "0"
-                              }% APY)`
-                            : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`}
+                          bestPool.opportunity_score !== undefined ? (
+                            <>
+                              <Link
+                                href="/opportunity-score"
+                                className="opportunity-score-link"
+                                title="Learn about Opportunity Score"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Score: {bestPool.opportunity_score.toFixed(2)}
+                              </Link>{" "}
+                              ({bestPool.total_apy?.toFixed(2) || "0"}% APY)
+                            </>
+                          ) : (
+                            `${bestPool.total_apy?.toFixed(2) || "0"}% APY`
+                          )}
                         </span>
                       </div>
                       {alpha !== null && (
@@ -1314,6 +1201,22 @@ export default function VaultPage() {
                   {expandedCards.bestPool && (
                     <div className="best-pool-details">
                       <p className="best-pool-name">{bestPool.description}</p>
+                      {bestPool.opportunity_score !== null &&
+                        bestPool.opportunity_score !== undefined && (
+                          <div style={{ marginBottom: "0.5rem" }}>
+                            <Link
+                              href="/opportunity-score"
+                              className="opportunity-score-link"
+                              style={{
+                                color: "var(--primary)",
+                                textDecoration: "none",
+                                fontSize: "0.9rem",
+                              }}
+                            >
+                              Learn about Opportunity Score →
+                            </Link>
+                          </div>
+                        )}
                       {bestPool.opportunity_score !== null &&
                         bestPool.opportunity_score !== undefined && (
                           <div
