@@ -70,6 +70,30 @@ export const TRACKED_POOLS: PoolConfig[] = [
     pool_address: "0xE4847Cb23dAd9311b9907497EF8B39d00AC1DE14",
     chain: "hyperevm",
   },
+  {
+    description: "GlueX USDT0",
+    url: "[TODO: Add pool URL]",
+    pool_address: "0xcdc3975df9d1cf054f44ed238edfb708880292ea",
+    chain: "hyperevm",
+  },
+  {
+    description: "Hyperithm USDT0",
+    url: "[TODO: Add pool URL]",
+    pool_address: "0xe5add96840f0b908ddeb3bd144c0283ac5ca7ca0",
+    chain: "hyperevm",
+  },
+  {
+    description: "Hyperbeat USDT",
+    url: "[TODO: Add pool URL]",
+    pool_address: "0x5e105266db42f78fa814322bce7f388b4c2e61eb",
+    chain: "hyperevm",
+  },
+  {
+    description: "Hyperlend Hyperevm USDT0",
+    url: "[TODO: Add pool URL]",
+    pool_address: "0x10982ad645d5a112606534d8567418cf64c14cb5",
+    chain: "hyperevm",
+  },
   // {
   //   description: "Hypurr Pooled USD₮0",
   //   url: "https://app.hypurr.fi/markets/pooled/999/0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
