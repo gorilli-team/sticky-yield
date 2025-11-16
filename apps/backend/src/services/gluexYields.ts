@@ -195,16 +195,14 @@ export async function getBestYield(): Promise<YieldResponse> {
  *
  * @param poolAddress - The pool contract address
  * @param chain - The blockchain network (e.g., "hyperevm")
- * @param lpTokenAddress - Optional LP token address (can be placeholder)
  */
 export async function getPoolTvl(
   poolAddress: string,
-  chain: string,
-  lpTokenAddress: string = "0x1234567890123456789012345678901234567890"
+  chain: string
 ): Promise<any> {
-  const requestData = {
+  // Only send pool_address, not lp_token_address
+  const requestData: any = {
     pool_address: poolAddress,
-    lp_token_address: lpTokenAddress,
     chain: chain,
   };
 
@@ -217,6 +215,12 @@ export async function getPoolTvl(
     if (ENV.GLUEX_API_KEY) {
       headers["X-API-Key"] = ENV.GLUEX_API_KEY;
     }
+
+    // Debug: log the request data to verify it's correct
+    console.log(
+      `📊 Fetching TVL for pool ${poolAddress}, request data:`,
+      JSON.stringify(requestData)
+    );
 
     const response = await axios.post(
       `${GLUEX_YIELD_API_BASE}/tvl`,
