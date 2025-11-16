@@ -3,6 +3,8 @@ import {
   getLatestApy,
   getPoolApyHistory,
   getPoolApyStats,
+  getMarketAverageHistory,
+  getLatestMarketAverage,
 } from "../services/apyTracker";
 import { getCronJobsStatus } from "../services/cronJobs";
 
@@ -274,6 +276,65 @@ router.get("/token/:tokenAddress", async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: error.message || "Failed to fetch token APY history",
+    });
+  }
+});
+
+/**
+ * GET /api/apy/market-average
+ * Get latest market average APY
+ * Query params: token (optional - filter by token address)
+ */
+router.get("/market-average", async (req: Request, res: Response) => {
+  try {
+    const tokenAddress = req.query.token as string | undefined;
+    const marketAverage = await getLatestMarketAverage(tokenAddress || null);
+
+    if (!marketAverage) {
+      return res.json({
+        success: true,
+        market_average: null,
+        message: "No market average data available",
+      });
+    }
+
+    res.json({
+      success: true,
+      market_average: marketAverage,
+    });
+  } catch (error: any) {
+    console.error("Error fetching market average:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch market average",
+    });
+  }
+});
+
+/**
+ * GET /api/apy/market-average/history
+ * Get market average history
+ * Query params: hours (default: 24), token (optional - filter by token address)
+ */
+router.get("/market-average/history", async (req: Request, res: Response) => {
+  try {
+    const hours = parseInt(req.query.hours as string) || 24;
+    const tokenAddress = req.query.token as string | undefined;
+
+    const history = await getMarketAverageHistory(tokenAddress || null, hours);
+
+    res.json({
+      success: true,
+      token_address: tokenAddress || null,
+      hours,
+      count: history.length,
+      history,
+    });
+  } catch (error: any) {
+    console.error("Error fetching market average history:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch market average history",
     });
   }
 });

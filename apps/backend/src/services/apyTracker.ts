@@ -1,4 +1,5 @@
 import { ApyHistory } from "../models/ApyHistory";
+import { MarketAverage } from "../models/MarketAverage";
 import { getPoolHistoricalApy, getPoolTvl } from "./gluexYields";
 import {
   calculateOpportunityScore,
@@ -259,6 +260,104 @@ async function trackPoolApy(pool: PoolConfig): Promise<void> {
 }
 
 /**
+ * Calculate and store market average APY (TVL-weighted)
+ * Market Average = Σ(APY(i) × TVL(i)) / Σ(TVL(i))
+ */
+async function calculateAndStoreMarketAverage(
+  tokenAddress?: string | null
+): Promise<void> {
+  try {
+    // Get latest APY data for all pools (or filtered by token)
+    const latestApy = await getLatestApy();
+
+    // Filter by token if specified
+    const poolsToInclude = tokenAddress
+      ? latestApy.filter(
+          (pool: any) =>
+            pool.input_token?.toLowerCase() === tokenAddress.toLowerCase()
+        )
+      : latestApy;
+
+    // Filter pools that have both APY and TVL data
+    const validPools = poolsToInclude.filter(
+      (pool: any) =>
+        pool.total_apy !== null &&
+        pool.total_apy !== undefined &&
+        pool.tvl_usd !== null &&
+        pool.tvl_usd !== undefined &&
+        pool.tvl_usd > 0
+    );
+
+    if (validPools.length === 0) {
+      console.log(
+        `⚠️  No valid pools with APY and TVL data for market average calculation${
+          tokenAddress ? ` (token: ${tokenAddress})` : ""
+        }`
+      );
+      return;
+    }
+
+    // Calculate TVL-weighted average APY
+    let totalWeightedSum = 0; // Σ(APY(i) × TVL(i))
+    let totalTvl = 0; // Σ(TVL(i))
+    let totalTvlUsd = 0; // Σ(TVL_USD(i))
+
+    const poolBreakdown = validPools.map((pool: any) => {
+      const apy = pool.total_apy || 0;
+      const tvlUsd = pool.tvl_usd || 0;
+      const weightedContribution = apy * tvlUsd;
+
+      totalWeightedSum += weightedContribution;
+      totalTvlUsd += tvlUsd;
+      // For total_tvl, use tvl if available, otherwise use tvl_usd
+      totalTvl += pool.tvl || tvlUsd;
+
+      return {
+        pool_address: pool.pool_address,
+        description: pool.description || "Unknown Pool",
+        apy: apy,
+        tvl_usd: tvlUsd,
+        weighted_contribution: weightedContribution,
+      };
+    });
+
+    // Calculate market average: Total_Weighted_Sum / Total_TVL
+    const marketAvgApy = totalTvlUsd > 0 ? totalWeightedSum / totalTvlUsd : 0;
+
+    // Store market average
+    const marketAverageRecord = new MarketAverage({
+      token_address: tokenAddress?.toLowerCase() || null,
+      market_avg_apy: marketAvgApy,
+      total_tvl: totalTvl,
+      total_tvl_usd: totalTvlUsd,
+      pool_count: validPools.length,
+      pool_breakdown: poolBreakdown,
+      timestamp: new Date(),
+    });
+
+    await marketAverageRecord.save();
+
+    console.log(
+      `📊 Market Average APY${
+        tokenAddress ? ` (${tokenAddress})` : ""
+      }: ${marketAvgApy.toFixed(2)}% (${
+        validPools.length
+      } pools, Total TVL: $${totalTvlUsd.toLocaleString(undefined, {
+        maximumFractionDigits: 0,
+      })})`
+    );
+  } catch (error: any) {
+    console.error(
+      `❌ Error calculating market average${
+        tokenAddress ? ` for token ${tokenAddress}` : ""
+      }:`,
+      error.message
+    );
+    // Don't throw - allow tracking to continue even if market average fails
+  }
+}
+
+/**
  * Track APY for all pools
  */
 export async function trackAllPoolsApy(): Promise<void> {
@@ -271,6 +370,25 @@ export async function trackAllPoolsApy(): Promise<void> {
   try {
     // Track all pools in parallel
     await Promise.all(TRACKED_POOLS.map((pool) => trackPoolApy(pool)));
+
+    // Calculate and store market average after all pools are tracked
+    // Calculate for all pools combined
+    await calculateAndStoreMarketAverage(null);
+
+    // Also calculate per-token market averages
+    // Get unique tokens from tracked pools
+    const latestApy = await getLatestApy();
+    const uniqueTokens = new Set<string>();
+    latestApy.forEach((pool: any) => {
+      if (pool.input_token) {
+        uniqueTokens.add(pool.input_token.toLowerCase());
+      }
+    });
+
+    // Calculate market average for each token
+    for (const token of uniqueTokens) {
+      await calculateAndStoreMarketAverage(token);
+    }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`\n✅ APY tracking cycle completed in ${duration}s\n`);
@@ -465,6 +583,67 @@ export async function getPoolApyStats(poolAddress: string, hours: number = 24) {
     };
   } catch (error) {
     console.error("Error fetching pool APY stats:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get market average history
+ * @param tokenAddress - Optional token address to filter by (null for all tokens)
+ * @param hours - Number of hours of history to retrieve (default: 24)
+ */
+export async function getMarketAverageHistory(
+  tokenAddress?: string | null,
+  hours: number = 24
+): Promise<any[]> {
+  try {
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+    const query: any = {
+      timestamp: { $gte: since },
+    };
+
+    if (tokenAddress) {
+      query.token_address = tokenAddress.toLowerCase();
+    } else {
+      // If no token specified, get overall market average (token_address is null)
+      query.token_address = null;
+    }
+
+    const history = await MarketAverage.find(query)
+      .sort({ timestamp: 1 })
+      .lean();
+
+    return history;
+  } catch (error) {
+    console.error("Error fetching market average history:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get latest market average
+ * @param tokenAddress - Optional token address to filter by (null for all tokens)
+ */
+export async function getLatestMarketAverage(
+  tokenAddress?: string | null
+): Promise<any | null> {
+  try {
+    const query: any = {};
+
+    if (tokenAddress) {
+      query.token_address = tokenAddress.toLowerCase();
+    } else {
+      query.token_address = null;
+    }
+
+    const latest = await MarketAverage.findOne(query)
+      .sort({ timestamp: -1 })
+      .lean();
+
+    return latest;
+  } catch (error) {
+    console.error("Error fetching latest market average:", error);
     throw error;
   }
 }
