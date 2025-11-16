@@ -826,7 +826,12 @@ export default function VaultPage() {
               <div className="vault-section-card">
                 <div className="section-header">
                   <h3>Fund Allocations</h3>
-                  {isVaultOwner &&
+                  <Link href="/automation">
+                    <button className="btn-secondary btn-small">
+                      View Automation History
+                    </button>
+                  </Link>
+                  {/* {isVaultOwner &&
                     bestPool &&
                     parseFloat(vaultIdleBalance) > 0 && (
                       <button
@@ -836,7 +841,7 @@ export default function VaultPage() {
                       >
                         {loading ? "Reallocating..." : "Optimize Allocation"}
                       </button>
-                    )}
+                    )} */}
                 </div>
                 {loadingAllocations ? (
                   <div className="loading-state">Loading allocations...</div>
@@ -1267,11 +1272,15 @@ export default function VaultPage() {
                   >
                     <div className="best-pool-header-content">
                       <div>
-                        <h4>Best Pool</h4>
+                        <h4>Sticky Yield Vault</h4>
                         <span className="best-apy">
                           {bestPool.opportunity_score !== null &&
                           bestPool.opportunity_score !== undefined
-                            ? `Score: ${bestPool.opportunity_score.toFixed(2)}`
+                            ? `Score: ${bestPool.opportunity_score.toFixed(
+                                2
+                              )} (${
+                                bestPool.total_apy?.toFixed(2) || "0"
+                              }% APY)`
                             : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`}
                         </span>
                       </div>
