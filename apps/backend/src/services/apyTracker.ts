@@ -1,5 +1,9 @@
 import { ApyHistory } from "../models/ApyHistory";
 import { getPoolHistoricalApy, getPoolTvl } from "./gluexYields";
+import {
+  calculateOpportunityScore,
+  OpportunityScoreResult,
+} from "../utils/opportunityScore";
 
 // Pool configuration
 export interface PoolConfig {
@@ -104,6 +108,44 @@ async function trackPoolApy(pool: PoolConfig): Promise<void> {
     const tvl = tvlResult?.tvl?.tvl || null;
     const tvlUsd = tvlResult?.tvl?.tvl_usd || null;
 
+    // Calculate opportunity score using historical data
+    let opportunityScore: number | null = null;
+    let opportunityScoreDetails: any = null;
+    const defaultAssetSize = 100000; // Default: $100k
+
+    try {
+      // Get APY statistics for last 24 hours to calculate opportunity score
+      const stats = await getPoolApyStats(pool.pool_address, 24);
+
+      if (stats && stats.count > 0 && tvlUsd) {
+        const scoreResult = calculateOpportunityScore({
+          apyAvg24h: stats.average,
+          apyStd24h: stats.stdDev,
+          tvlCurrent: tvlUsd,
+          myAssetSize: defaultAssetSize,
+          riskPenaltyFactor: 1,
+          tvlK: 20,
+          tvlM: 0.1,
+        });
+
+        opportunityScore = scoreResult.opportunityScore;
+        opportunityScoreDetails = {
+          stability_adjusted_apy: scoreResult.stabilityAdjustedApy,
+          tvl_confidence_factor: scoreResult.tvlConfidenceFactor,
+          apy_avg_24h: scoreResult.apyAvg24h,
+          apy_std_24h: scoreResult.apyStd24h,
+          tvl_current: scoreResult.tvlCurrent,
+          my_asset_size: scoreResult.myAssetSize,
+        };
+      }
+    } catch (scoreError) {
+      console.error(
+        `⚠️  Failed to calculate opportunity score for ${pool.description}:`,
+        scoreError
+      );
+      // Continue without opportunity score - don't fail the entire tracking
+    }
+
     // Save to database
     const apyRecord = new ApyHistory({
       pool_address: pool.pool_address.toLowerCase(),
@@ -116,6 +158,9 @@ async function trackPoolApy(pool: PoolConfig): Promise<void> {
       rewards_apy: rewardsApy,
       tvl: tvl,
       tvl_usd: tvlUsd,
+      opportunity_score: opportunityScore,
+      opportunity_score_details: opportunityScoreDetails,
+      opportunity_score_asset_size: defaultAssetSize,
       raw_response: apyResult,
       success: true,
       timestamp: new Date(),
@@ -128,12 +173,16 @@ async function trackPoolApy(pool: PoolConfig): Promise<void> {
           maximumFractionDigits: 0,
         })}`
       : "";
+    const scoreInfo =
+      opportunityScore !== null
+        ? `, Opportunity Score: ${opportunityScore.toFixed(2)}`
+        : "";
     console.log(
       `✅ Saved APY for ${pool.description}: ${totalApy.toFixed(
         2
       )}% (Historic: ${historicApy.toFixed(2)}%, Rewards: ${rewardsApy.toFixed(
         2
-      )}%)${tvlInfo}`
+      )}%)${tvlInfo}${scoreInfo}`
     );
   } catch (error: any) {
     console.error(
@@ -185,9 +234,81 @@ export async function trackAllPoolsApy(): Promise<void> {
 }
 
 /**
- * Get latest APY for all pools from database
+ * Enrich pool data with opportunity score
+ * Uses stored opportunity score from database if available and asset size matches,
+ * otherwise recalculates
  */
-export async function getLatestApy() {
+async function enrichPoolWithOpportunityScore(
+  pool: any,
+  myAssetSize: number = 100000 // Default: $100k
+): Promise<any> {
+  // If pool already has opportunity_score from database and asset size matches, use it
+  if (
+    pool.opportunity_score !== null &&
+    pool.opportunity_score !== undefined &&
+    pool.opportunity_score_asset_size === myAssetSize
+  ) {
+    return pool; // Already has the score we need
+  }
+
+  try {
+    // Get APY statistics (avg, std) for last 24 hours
+    const stats = await getPoolApyStats(pool.pool_address, 24);
+
+    if (!stats || stats.count === 0) {
+      // If no historical data, return stored score if available, otherwise null
+      return {
+        ...pool,
+        opportunity_score: pool.opportunity_score || null,
+        opportunity_score_details: pool.opportunity_score_details || null,
+      };
+    }
+
+    // Get current TVL (use from pool data or fetch)
+    const tvlUsd = pool.tvl_usd || 0;
+
+    // Calculate opportunity score with requested asset size
+    const opportunityScoreResult = calculateOpportunityScore({
+      apyAvg24h: stats.average,
+      apyStd24h: stats.stdDev,
+      tvlCurrent: tvlUsd,
+      myAssetSize: myAssetSize,
+      riskPenaltyFactor: 1, // Default risk penalty
+      tvlK: 20, // Default sigmoid steepness
+      tvlM: 0.1, // Default midpoint (10% of pool)
+    });
+
+    return {
+      ...pool,
+      opportunity_score: opportunityScoreResult.opportunityScore,
+      opportunity_score_details: {
+        stability_adjusted_apy: opportunityScoreResult.stabilityAdjustedApy,
+        tvl_confidence_factor: opportunityScoreResult.tvlConfidenceFactor,
+        apy_avg_24h: opportunityScoreResult.apyAvg24h,
+        apy_std_24h: opportunityScoreResult.apyStd24h,
+        tvl_current: opportunityScoreResult.tvlCurrent,
+        my_asset_size: opportunityScoreResult.myAssetSize,
+      },
+    };
+  } catch (error) {
+    console.error(
+      `Error calculating opportunity score for pool ${pool.pool_address}:`,
+      error
+    );
+    // Return stored score if available, otherwise null
+    return {
+      ...pool,
+      opportunity_score: pool.opportunity_score || null,
+      opportunity_score_details: pool.opportunity_score_details || null,
+    };
+  }
+}
+
+/**
+ * Get latest APY for all pools from database
+ * @param myAssetSize - Optional asset size for opportunity score calculation (default: $100k)
+ */
+export async function getLatestApy(myAssetSize?: number) {
   try {
     const latestRecords = await ApyHistory.aggregate([
       { $match: { success: true } },
@@ -202,7 +323,24 @@ export async function getLatestApy() {
       { $sort: { total_apy: -1 } },
     ]);
 
-    return latestRecords;
+    // Enrich each pool with opportunity score
+    const enrichedPools = await Promise.all(
+      latestRecords.map((pool) =>
+        enrichPoolWithOpportunityScore(pool, myAssetSize)
+      )
+    );
+
+    // Sort by opportunity score (if available) or by APY
+    enrichedPools.sort((a, b) => {
+      if (a.opportunity_score !== null && b.opportunity_score !== null) {
+        return b.opportunity_score - a.opportunity_score;
+      }
+      if (a.opportunity_score !== null) return -1;
+      if (b.opportunity_score !== null) return 1;
+      return (b.total_apy || 0) - (a.total_apy || 0);
+    });
+
+    return enrichedPools;
   } catch (error) {
     console.error("Error fetching latest APY:", error);
     throw error;
@@ -235,33 +373,50 @@ export async function getPoolApyHistory(
 }
 
 /**
- * Get APY statistics for a pool
+ * Get APY statistics for a pool (including standard deviation)
  */
 export async function getPoolApyStats(poolAddress: string, hours: number = 24) {
   try {
     const since = new Date(Date.now() - hours * 60 * 60 * 1000);
 
-    const stats = await ApyHistory.aggregate([
-      {
-        $match: {
-          pool_address: poolAddress.toLowerCase(),
-          timestamp: { $gte: since },
-          success: true,
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          current: { $last: "$total_apy" },
-          average: { $avg: "$total_apy" },
-          min: { $min: "$total_apy" },
-          max: { $max: "$total_apy" },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+    // First get all APY values to calculate standard deviation
+    const history = await ApyHistory.find({
+      pool_address: poolAddress.toLowerCase(),
+      timestamp: { $gte: since },
+      success: true,
+    })
+      .select("total_apy")
+      .sort({ timestamp: 1 })
+      .lean();
 
-    return stats[0] || null;
+    const apyValues = history.map((h: any) => h.total_apy || 0);
+
+    // Calculate statistics
+    if (apyValues.length === 0) {
+      return null;
+    }
+
+    const current = apyValues[apyValues.length - 1];
+    const average =
+      apyValues.reduce((sum, val) => sum + val, 0) / apyValues.length;
+    const min = Math.min(...apyValues);
+    const max = Math.max(...apyValues);
+
+    // Calculate standard deviation
+    const mean = average;
+    const squaredDiffs = apyValues.map((val) => Math.pow(val - mean, 2));
+    const variance =
+      squaredDiffs.reduce((sum, val) => sum + val, 0) / apyValues.length;
+    const stdDev = Math.sqrt(variance);
+
+    return {
+      current,
+      average,
+      min,
+      max,
+      stdDev,
+      count: apyValues.length,
+    };
   } catch (error) {
     console.error("Error fetching pool APY stats:", error);
     throw error;

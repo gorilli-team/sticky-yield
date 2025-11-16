@@ -1,6 +1,7 @@
 import axios from "axios";
-import { TRACKED_POOLS } from "./apyTracker";
+import { TRACKED_POOLS, getPoolApyStats } from "./apyTracker";
 import { ENV } from "../config/env";
+import { calculateOpportunityScore } from "../utils/opportunityScore";
 
 const GLUEX_YIELD_API_BASE = "https://yield-api.gluex.xyz";
 
@@ -16,6 +17,15 @@ export interface YieldPool {
   name?: string;
   tvl?: number;
   tvl_usd?: number;
+  opportunity_score?: number | null; // Opportunity score
+  opportunity_score_details?: {
+    stability_adjusted_apy: number;
+    tvl_confidence_factor: number;
+    apy_avg_24h: number;
+    apy_std_24h: number;
+    tvl_current: number;
+    my_asset_size: number;
+  } | null;
   raw_gluex_response?: any; // Full raw response from GlueX API
 }
 
@@ -101,8 +111,11 @@ export async function getPoolHistoricalApy(
 /**
  * Fetch best current yields from multiple pools
  * This is a wrapper that queries multiple pools
+ * @param myAssetSize - Optional asset size for opportunity score calculation (default: $100k)
  */
-export async function getBestYield(): Promise<YieldResponse> {
+export async function getBestYield(
+  myAssetSize: number = 100000
+): Promise<YieldResponse> {
   try {
     // Use TRACKED_POOLS from apyTracker as the single source of truth
     // This ensures consistency between cron tracking and API responses
@@ -148,34 +161,79 @@ export async function getBestYield(): Promise<YieldResponse> {
     const results = await Promise.all(poolPromises);
 
     // Filter out failed requests and format response
-    const validPools = results
-      .filter((result) => result.apyResult !== null)
-      .map((result) => {
-        const { apyResult, tvlResult, pool } = result;
+    const validPools = await Promise.all(
+      results
+        .filter((result) => result.apyResult !== null)
+        .map(async (result) => {
+          const { apyResult, tvlResult, pool } = result;
 
-        // Extract APY from GlueX response structure
-        const historicApy = apyResult?.historic_yield?.apy?.apy || 0;
-        const rewardsApy = apyResult?.rewards_status?.rewards_yield?.apy || 0;
-        const totalApy = historicApy + rewardsApy;
+          // Extract APY from GlueX response structure
+          const historicApy = apyResult?.historic_yield?.apy?.apy || 0;
+          const rewardsApy = apyResult?.rewards_status?.rewards_yield?.apy || 0;
+          const totalApy = historicApy + rewardsApy;
 
-        // Extract TVL from GlueX response structure
-        const tvl = tvlResult?.tvl?.tvl || null;
-        const tvlUsd = tvlResult?.tvl?.tvl_usd || null;
+          // Extract TVL from GlueX response structure
+          const tvl = tvlResult?.tvl?.tvl || null;
+          const tvlUsd = tvlResult?.tvl?.tvl_usd || null;
 
-        return {
-          ...pool,
-          apy: totalApy,
-          historic_apy: historicApy,
-          rewards_apy: rewardsApy,
-          input_token: apyResult?.historic_yield?.input_token,
-          tvl: tvl,
-          tvl_usd: tvlUsd,
-          raw_gluex_response: apyResult, // Include full GlueX response
-        };
-      });
+          // Calculate opportunity score using historical data
+          let opportunityScore: number | null = null;
+          let opportunityScoreDetails: any = null;
 
-    // Sort pools by APY in descending order (highest first)
-    const sortedPools = validPools.sort((a, b) => b.apy - a.apy);
+          try {
+            const stats = await getPoolApyStats(pool.pool_address, 24);
+            if (stats && stats.count > 0 && tvlUsd) {
+              const scoreResult = calculateOpportunityScore({
+                apyAvg24h: stats.average,
+                apyStd24h: stats.stdDev,
+                tvlCurrent: tvlUsd,
+                myAssetSize: myAssetSize,
+                riskPenaltyFactor: 1,
+                tvlK: 20,
+                tvlM: 0.1,
+              });
+
+              opportunityScore = scoreResult.opportunityScore;
+              opportunityScoreDetails = {
+                stability_adjusted_apy: scoreResult.stabilityAdjustedApy,
+                tvl_confidence_factor: scoreResult.tvlConfidenceFactor,
+                apy_avg_24h: scoreResult.apyAvg24h,
+                apy_std_24h: scoreResult.apyStd24h,
+                tvl_current: scoreResult.tvlCurrent,
+                my_asset_size: scoreResult.myAssetSize,
+              };
+            }
+          } catch (error) {
+            console.error(
+              `Error calculating opportunity score for ${pool.pool_address}:`,
+              error
+            );
+          }
+
+          return {
+            ...pool,
+            apy: totalApy,
+            historic_apy: historicApy,
+            rewards_apy: rewardsApy,
+            input_token: apyResult?.historic_yield?.input_token,
+            tvl: tvl,
+            tvl_usd: tvlUsd,
+            opportunity_score: opportunityScore,
+            opportunity_score_details: opportunityScoreDetails,
+            raw_gluex_response: apyResult, // Include full GlueX response
+          };
+        })
+    );
+
+    // Sort pools by opportunity score (if available) or by APY
+    const sortedPools = validPools.sort((a, b) => {
+      if (a.opportunity_score !== null && b.opportunity_score !== null) {
+        return b.opportunity_score - a.opportunity_score;
+      }
+      if (a.opportunity_score !== null) return -1;
+      if (b.opportunity_score !== null) return 1;
+      return (b.apy || 0) - (a.apy || 0);
+    });
 
     return {
       pools: sortedPools,
