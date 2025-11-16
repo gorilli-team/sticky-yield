@@ -197,14 +197,6 @@ cast send $VAULT_ADDRESS \
 cast balance $YOUR_ADDRESS --rpc-url $HYPEREVM_RPC_URL
 ```
 
-### Wrong Network
-```bash
-# Verify you're on the correct chain
-cast chain-id --rpc-url $HYPEREVM_RPC_URL
-```
-
-### Contract Verification Failed
-Contract verification on HyperEVM may not be available. You can skip `--verify` flag.
 
 ## Security Notes
 

@@ -151,25 +151,25 @@ event WhitelistUpdated(address indexed vault, bool allowed);
 
 ### Permissionless Mode (whitelistEnabled = false)
 **Pros:**
-- ✅ Maximum flexibility
-- ✅ Quick testing
-- ✅ No setup overhead
+- Maximum flexibility
+- Quick testing
+- No setup overhead
 
 **Cons:**
-- ⚠️ Owner can allocate to any address
-- ⚠️ Requires trusted owner
-- ⚠️ Not recommended for mainnet
+- Owner can allocate to any address
+- Requires trusted owner
+- Not recommended for mainnet
 
 ### Whitelist Mode (whitelistEnabled = true)
 **Pros:**
-- ✅ Only approved pools
-- ✅ Additional security layer
-- ✅ Recommended for production
+- Only approved pools
+- Additional security layer
+- Recommended for production
 
 **Cons:**
-- ⚠️ Requires whitelist management
-- ⚠️ Less flexible
-- ⚠️ Still requires trusted owner
+- Requires whitelist management
+- Less flexible
+- Still requires trusted owner
 
 ## Quick Reference
 
@@ -186,10 +186,10 @@ event WhitelistUpdated(address indexed vault, bool allowed);
 ## Summary
 
 **TL;DR**: 
-- Deploy with `whitelistEnabled = false` for testing ✅
-- Allocate to any pool immediately 🚀
-- Toggle to `whitelistEnabled = true` for production 🔒
-- Best of both worlds! 🎉
+- Deploy with `whitelistEnabled = false` for testing
+- Allocate to any pool immediately
+- Toggle to `whitelistEnabled = true` for production
+- Best of both worlds!
 
 ## Test Results
 
