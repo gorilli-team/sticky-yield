@@ -16,7 +16,7 @@ import { getDatabaseStatus } from "../services/database";
 const router: Router = Router();
 
 // Debug: Log all route registrations
-console.log("📋 Registering APY routes...");
+console.log("Registering APY routes...");
 
 /**
  * GET /api/apy/latest

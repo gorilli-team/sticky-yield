@@ -5,7 +5,7 @@ let isConnected = false;
 
 export async function connectDatabase(): Promise<void> {
   if (isConnected) {
-    console.log("📦 Using existing MongoDB connection");
+    console.log("Using existing MongoDB connection");
     return;
   }
 
@@ -13,7 +13,7 @@ export async function connectDatabase(): Promise<void> {
   const mongoUri =
     ENV.MONGODB_CONNECTION_STRING || process.env.MONGODB_CONNECTION_STRING;
 
-  console.log("🔍 Checking MongoDB connection string...");
+  console.log("Checking MongoDB connection string...");
   console.log(
     `   ENV.MONGODB_CONNECTION_STRING: ${
       ENV.MONGODB_CONNECTION_STRING ? "SET" : "NOT SET"
@@ -27,16 +27,16 @@ export async function connectDatabase(): Promise<void> {
 
   if (!mongoUri) {
     console.warn(
-      "⚠️  MONGODB_CONNECTION_STRING is not defined - APY tracking will be disabled"
+      "MONGODB_CONNECTION_STRING is not defined - APY tracking will be disabled"
     );
     console.warn(
-      "💡 Make sure your .env file contains: MONGODB_CONNECTION_STRING=your_connection_string"
+      "Make sure your .env file contains: MONGODB_CONNECTION_STRING=your_connection_string"
     );
     return;
   }
 
   try {
-    console.log("🔌 Connecting to MongoDB...");
+    console.log("Connecting to MongoDB...");
 
     await mongoose.connect(mongoUri, {
       maxPoolSize: 10,
@@ -45,25 +45,25 @@ export async function connectDatabase(): Promise<void> {
     });
 
     isConnected = true;
-    console.log("✅ MongoDB connected successfully");
+    console.log("MongoDB connected successfully");
 
     // Handle connection events
     mongoose.connection.on("error", (error) => {
-      console.error("❌ MongoDB connection error:", error);
+      console.error("MongoDB connection error:", error);
       isConnected = false;
     });
 
     mongoose.connection.on("disconnected", () => {
-      console.log("⚠️  MongoDB disconnected");
+      console.log("MongoDB disconnected");
       isConnected = false;
     });
 
     mongoose.connection.on("reconnected", () => {
-      console.log("✅ MongoDB reconnected");
+      console.log("MongoDB reconnected");
       isConnected = true;
     });
   } catch (error) {
-    console.error("❌ MongoDB connection failed:", error);
+    console.error("MongoDB connection failed:", error);
     isConnected = false;
     throw error;
   }
@@ -81,9 +81,9 @@ export async function disconnectDatabase(): Promise<void> {
   try {
     await mongoose.connection.close();
     isConnected = false;
-    console.log("🔌 MongoDB disconnected gracefully");
+    console.log("MongoDB disconnected gracefully");
   } catch (error) {
-    console.error("❌ Error disconnecting from MongoDB:", error);
+    console.error("Error disconnecting from MongoDB:", error);
     throw error;
   }
 }

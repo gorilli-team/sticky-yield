@@ -139,7 +139,7 @@ async function calculateReallocationPlan(
   }
 
   // Already allocated - check if reallocation is beneficial
-  console.log(`\n📊 Current allocation: ${currentAllocation.pool}`);
+  console.log(`\nCurrent allocation: ${currentAllocation.pool}`);
   console.log(
     `   Amount: ${ethers.utils.formatUnits(currentAllocation.amount, 18)}`
   );
@@ -207,11 +207,11 @@ async function executeReallocation(
   plan: ReallocationPlan
 ): Promise<void> {
   if (!plan.shouldReallocate) {
-    console.log(`\n⏸️  No reallocation needed: ${plan.reason}`);
+    console.log(`\nNo reallocation needed: ${plan.reason}`);
     return;
   }
 
-  console.log(`\n🔄 Executing reallocation...`);
+  console.log(`\nExecuting reallocation...`);
   console.log(`   Reason: ${plan.reason}`);
   console.log(`   Target pool: ${plan.targetPool}`);
   console.log(
@@ -221,30 +221,30 @@ async function executeReallocation(
   try {
     // Step 1: Withdraw from current pool if needed
     if (plan.currentPool) {
-      console.log(`\n📤 Withdrawing from current pool...`);
+      console.log(`\nWithdrawing from current pool...`);
       const withdrawTx = await vault.withdrawFromVault(
         plan.currentPool,
         plan.amountToReallocate
       );
       console.log(`   Tx hash: ${withdrawTx.hash}`);
       await withdrawTx.wait();
-      console.log(`   ✅ Withdrawal confirmed`);
+      console.log(`   Withdrawal confirmed`);
     }
 
     // Step 2: Allocate to target pool
-    console.log(`\n📥 Allocating to target pool...`);
+    console.log(`\nAllocating to target pool...`);
     const allocateTx = await vault.reallocate(
       plan.targetPool,
       plan.amountToReallocate
     );
     console.log(`   Tx hash: ${allocateTx.hash}`);
     await allocateTx.wait();
-    console.log(`   ✅ Allocation confirmed`);
+    console.log(`   Allocation confirmed`);
 
-    console.log(`\n✅ Reallocation completed successfully!`);
+    console.log(`\nReallocation completed successfully!`);
     console.log(`   New APY: ${plan.targetApy.toFixed(2)}%`);
   } catch (error: any) {
-    console.error(`\n❌ Reallocation failed:`, error.message);
+    console.error(`\nReallocation failed:`, error.message);
     throw error;
   }
 }
@@ -253,7 +253,7 @@ async function executeReallocation(
  * Main reallocation function
  */
 async function reallocateVault(dryRun: boolean = false): Promise<void> {
-  console.log("\n🚀 Starting vault reallocation process...");
+  console.log("\nStarting vault reallocation process...");
   console.log(`   Vault: ${VAULT_ADDRESS}`);
   console.log(`   Asset: ${ASSET_TOKEN}`);
   console.log(`   Mode: ${dryRun ? "DRY RUN" : "LIVE"}`);
@@ -283,7 +283,7 @@ async function reallocateVault(dryRun: boolean = false): Promise<void> {
     const vaultAsset = await vault.ASSET();
     const whitelistEnabled = await vault.whitelistEnabled();
 
-    console.log(`\n📋 Vault Configuration:`);
+    console.log(`\nVault Configuration:`);
     console.log(`   Owner: ${vaultOwner}`);
     console.log(`   Asset: ${vaultAsset}`);
     console.log(
@@ -301,10 +301,10 @@ async function reallocateVault(dryRun: boolean = false): Promise<void> {
     }
 
     // Calculate reallocation plan
-    console.log(`\n🧮 Calculating reallocation plan...`);
+    console.log(`\nCalculating reallocation plan...`);
     const plan = await calculateReallocationPlan(vault);
 
-    console.log(`\n📊 Reallocation Plan:`);
+    console.log(`\nReallocation Plan:`);
     console.log(`   Current Pool: ${plan.currentPool || "None"}`);
     console.log(`   Current APY: ${plan.currentApy.toFixed(2)}%`);
     console.log(`   Target Pool: ${plan.targetPool}`);
@@ -324,10 +324,10 @@ async function reallocateVault(dryRun: boolean = false): Promise<void> {
     if (!dryRun && wallet) {
       await executeReallocation(vault, plan);
     } else if (dryRun) {
-      console.log(`\n🔍 DRY RUN - No transactions executed`);
+      console.log(`\nDRY RUN - No transactions executed`);
     }
   } catch (error: any) {
-    console.error(`\n❌ Error:`, error.message);
+    console.error(`\nError:`, error.message);
     throw error;
   }
 }
@@ -338,11 +338,11 @@ if (require.main === module) {
 
   reallocateVault(dryRun)
     .then(() => {
-      console.log("\n✅ Done!");
+      console.log("\nDone!");
       process.exit(0);
     })
     .catch((error) => {
-      console.error("\n❌ Failed:", error);
+      console.error("\nFailed:", error);
       process.exit(1);
     });
 }

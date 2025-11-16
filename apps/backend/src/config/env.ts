@@ -24,7 +24,7 @@ const envPaths = [
   path.join(process.cwd(), "apps", "backend", ".env"), // explicit backend path
 ];
 
-console.log("🔍 Searching for .env file in:");
+console.log("Searching for .env file in:");
 envPaths.forEach((p) => console.log(`   - ${p}`));
 
 // Load the first .env file that exists
@@ -35,9 +35,9 @@ for (const envPath of envPaths) {
   if (existsSync(envPath)) {
     const result = dotenv.config({ path: envPath });
     if (!result.error) {
-      console.log(`✅ Loaded .env from: ${envPath}`);
+      console.log(`Loaded .env from: ${envPath}`);
       console.log(
-        `📋 Loaded ${
+        `Loaded ${
           Object.keys(result.parsed || {}).length
         } environment variables`
       );
@@ -45,7 +45,7 @@ for (const envPath of envPaths) {
       loadedPath = envPath;
       break;
     } else {
-      console.log(`❌ Error loading .env from ${envPath}:`, result.error);
+      console.log(`Error loading .env from ${envPath}:`, result.error);
     }
   }
 }
@@ -54,7 +54,7 @@ for (const envPath of envPaths) {
 if (!loaded) {
   const result = dotenv.config();
   if (!result.error && result.parsed && Object.keys(result.parsed).length > 0) {
-    console.log("✅ Loaded .env from default location (process.cwd())");
+    console.log("Loaded .env from default location (process.cwd())");
     console.log(
       `📋 Loaded ${Object.keys(result.parsed).length} environment variables`
     );
@@ -71,10 +71,10 @@ if (!loaded) {
   if (process.env.MONGODB_CONNECTION_STRING) {
     const masked =
       process.env.MONGODB_CONNECTION_STRING.substring(0, 20) + "...";
-    console.log(`✅ MONGODB_CONNECTION_STRING is set: ${masked}`);
+    console.log(`MONGODB_CONNECTION_STRING is set: ${masked}`);
   } else {
     console.warn(
-      "⚠️  MONGODB_CONNECTION_STRING is NOT set in environment variables"
+      "MONGODB_CONNECTION_STRING is NOT set in environment variables"
     );
   }
 }

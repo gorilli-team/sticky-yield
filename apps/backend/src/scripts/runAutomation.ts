@@ -4,20 +4,20 @@ import { connectDatabase } from "../services/database";
 import { runVaultAutomation } from "../services/vaultAutomation";
 
 async function main() {
-  console.log("🤖 Starting manual automation run...");
+  console.log("Starting manual automation run...");
 
   try {
     // Connect to database
     await connectDatabase();
-    console.log("✅ Database connected");
+    console.log("Database connected");
 
     // Run automation
     await runVaultAutomation();
-    console.log("✅ Automation completed");
+    console.log("Automation completed");
 
     process.exit(0);
   } catch (error: any) {
-    console.error("❌ Error running automation:", error);
+    console.error("Error running automation:", error);
     process.exit(1);
   }
 }

@@ -110,17 +110,17 @@ async function getVaultState(
  */
 export async function runVaultAutomation(): Promise<void> {
   if (!getDatabaseStatus()) {
-    console.error("⚠️  Skipping automation - database not connected");
+    console.error("Skipping automation - database not connected");
     return;
   }
 
   if (!VAULT_ADDRESS || !ASSET_TOKEN || !PRIVATE_KEY) {
-    console.error("⚠️  Skipping automation - missing configuration");
+    console.error("Skipping automation - missing configuration");
     return;
   }
 
   const startTime = Date.now();
-  console.log("🤖 Starting vault automation...");
+  console.log("Starting vault automation...");
 
   let automationRecord: Partial<IAutomationHistory> = {
     vault_address: VAULT_ADDRESS.toLowerCase(),
@@ -185,7 +185,7 @@ export async function runVaultAutomation(): Promise<void> {
     const hasIdleFunds = idleBalanceBN.gt(0);
 
     console.log(
-      `📊 Vault State - Idle: ${ethers.utils.formatUnits(
+      `Vault State - Idle: ${ethers.utils.formatUnits(
         idleBalanceBN,
         6
       )}, Total Assets: ${ethers.utils.formatUnits(
@@ -196,11 +196,9 @@ export async function runVaultAutomation(): Promise<void> {
         6
       )}`
     );
+    console.log(`Current Allocations: ${allCurrentAllocations.length} pool(s)`);
     console.log(
-      `📊 Current Allocations: ${allCurrentAllocations.length} pool(s)`
-    );
-    console.log(
-      `📊 Best Pool: ${bestPool.description} (Score: ${
+      `Best Pool: ${bestPool.description} (Score: ${
         bestPool.opportunity_score?.toFixed(2) || "N/A"
       }, APY: ${bestPool.total_apy?.toFixed(2)}%)`
     );
@@ -281,7 +279,7 @@ export async function runVaultAutomation(): Promise<void> {
         );
 
         console.log(
-          `🔄 Withdrawing from ${
+          `Withdrawing from ${
             allCurrentAllocations.length
           } pool(s), total: ${ethers.utils.formatUnits(
             totalToWithdraw,
@@ -290,22 +288,21 @@ export async function runVaultAutomation(): Promise<void> {
         );
 
         for (const allocation of allCurrentAllocations) {
-          console.log(`🔄 Withdrawing from ${allocation.pool}...`);
+          console.log(`Withdrawing from ${allocation.pool}...`);
           const withdrawTx = await vault.withdrawFromVault(
             allocation.pool,
             allocation.amount
           );
           await withdrawTx.wait();
           console.log(
-            `✅ Withdrew ${ethers.utils.formatUnits(
-              allocation.amount,
-              6
-            )} from ${allocation.pool}`
+            `Withdrew ${ethers.utils.formatUnits(allocation.amount, 6)} from ${
+              allocation.pool
+            }`
           );
         }
 
         // Step 2: Wait for funds to settle as idle (original idle + all withdrawn)
-        console.log("⏳ Waiting for funds to settle as idle...");
+        console.log("Waiting for funds to settle as idle...");
         const expectedIdleAmount = initialIdleBalance.add(totalToWithdraw);
         console.log(
           `   Expected idle: ${ethers.utils.formatUnits(
@@ -324,7 +321,7 @@ export async function runVaultAutomation(): Promise<void> {
           3000 // Check every 3 seconds (increased from 2)
         );
         console.log(
-          `✅ Idle balance after withdrawals: ${ethers.utils.formatUnits(
+          `Idle balance after withdrawals: ${ethers.utils.formatUnits(
             finalIdleBalance,
             6
           )}`
@@ -343,7 +340,7 @@ export async function runVaultAutomation(): Promise<void> {
 
         if (amountToReallocate.gt(0)) {
           console.log(
-            `🔄 Depositing ${ethers.utils.formatUnits(
+            `Depositing ${ethers.utils.formatUnits(
               amountToReallocate,
               6
             )} (all idle funds minus buffer) to ${bestPool.pool_address}...`
@@ -357,7 +354,7 @@ export async function runVaultAutomation(): Promise<void> {
           txHash = reallocateTx.hash;
           actionSuccess = true;
           console.log(
-            `✅ Reallocated ${ethers.utils.formatUnits(
+            `Reallocated ${ethers.utils.formatUnits(
               amountToReallocate,
               6
             )} to ${bestPool.pool_address}`
@@ -367,7 +364,7 @@ export async function runVaultAutomation(): Promise<void> {
         }
       } catch (error: any) {
         actionError = error.message || "Reallocation failed";
-        console.error("❌ Reallocation error:", error);
+        console.error("Reallocation error:", error);
       }
     } else if (hasIdleFunds) {
       // Deposit idle funds to best pool (whether we have allocations or not)
@@ -387,7 +384,7 @@ export async function runVaultAutomation(): Promise<void> {
         const amountToDeposit = idleBalanceBN.sub(buffer);
 
         console.log(
-          `💰 Idle funds detected: ${ethers.utils.formatUnits(
+          `Idle funds detected: ${ethers.utils.formatUnits(
             idleBalanceBN,
             6
           )}, Buffer: ${ethers.utils.formatUnits(
@@ -401,7 +398,7 @@ export async function runVaultAutomation(): Promise<void> {
 
         if (amountToDeposit.gt(0)) {
           console.log(
-            `🔄 Depositing ${ethers.utils.formatUnits(
+            `Depositing ${ethers.utils.formatUnits(
               amountToDeposit,
               6
             )} idle funds to best pool ${bestPool.pool_address}...`
@@ -415,14 +412,14 @@ export async function runVaultAutomation(): Promise<void> {
           txHash = depositTx.hash;
           actionSuccess = true;
           console.log(
-            `✅ Deposited ${ethers.utils.formatUnits(
+            `Deposited ${ethers.utils.formatUnits(
               amountToDeposit,
               6
             )} idle funds to best pool`
           );
         } else {
           console.log(
-            `⚠️  Amount to deposit (${ethers.utils.formatUnits(
+            `Amount to deposit (${ethers.utils.formatUnits(
               amountToDeposit,
               6
             )}) is too small after buffer`
@@ -432,10 +429,10 @@ export async function runVaultAutomation(): Promise<void> {
         }
       } catch (error: any) {
         actionError = error.message || "Deposit failed";
-        console.error("❌ Deposit error:", error);
+        console.error("Deposit error:", error);
       }
     } else {
-      console.log("ℹ️  No idle funds to move");
+      console.log("No idle funds to move");
       // No action needed
       automationRecord.decision = "no_action";
       actionType = "none";
@@ -454,7 +451,7 @@ export async function runVaultAutomation(): Promise<void> {
 
     automationRecord.success = true;
   } catch (error: any) {
-    console.error("❌ Automation error:", error);
+    console.error("Automation error:", error);
     automationRecord.error_message = error.message || "Unknown error";
     automationRecord.success = false;
   }
@@ -465,9 +462,9 @@ export async function runVaultAutomation(): Promise<void> {
     await record.save();
     const duration = Date.now() - startTime;
     console.log(
-      `✅ Automation completed in ${duration}ms. Decision: ${automationRecord.decision}`
+      `Automation completed in ${duration}ms. Decision: ${automationRecord.decision}`
     );
   } catch (error: any) {
-    console.error("❌ Failed to save automation record:", error);
+    console.error("Failed to save automation record:", error);
   }
 }

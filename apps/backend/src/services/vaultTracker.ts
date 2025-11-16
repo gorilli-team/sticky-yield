@@ -30,17 +30,17 @@ const TOKEN_DECIMALS = 6;
  */
 export async function trackVaultTvl(): Promise<void> {
   if (!getDatabaseStatus()) {
-    console.error("⚠️  Skipping vault TVL tracking - database not connected");
+    console.error("Skipping vault TVL tracking - database not connected");
     return;
   }
 
   if (!VAULT_ADDRESS || !ASSET_TOKEN) {
-    console.error("⚠️  Skipping vault TVL tracking - missing configuration");
+    console.error("Skipping vault TVL tracking - missing configuration");
     return;
   }
 
   try {
-    console.log(`📊 Tracking vault TVL for ${VAULT_ADDRESS}...`);
+    console.log(`Tracking vault TVL for ${VAULT_ADDRESS}...`);
 
     // Setup provider and contracts
     const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
@@ -71,7 +71,7 @@ export async function trackVaultTvl(): Promise<void> {
         pool.input_token?.toLowerCase() === ASSET_TOKEN.toLowerCase()
     );
 
-    console.log(`📊 Found ${tokenPools.length} tracked pools for token ${ASSET_TOKEN}`);
+    console.log(`Found ${tokenPools.length} tracked pools for token ${ASSET_TOKEN}`);
 
     // Get allocations for each pool
     const allocationPromises = tokenPools.map(async (pool: any) => {
@@ -86,7 +86,7 @@ export async function trackVaultTvl(): Promise<void> {
 
         if (amount > 0) {
           console.log(
-            `  ✓ Pool ${pool.description || poolAddress}: $${amount.toFixed(2)}`
+            `  Pool ${pool.description || poolAddress}: $${amount.toFixed(2)}`
           );
         }
 
@@ -98,7 +98,7 @@ export async function trackVaultTvl(): Promise<void> {
         };
       } catch (err: any) {
         console.error(
-          `  ✗ Error getting allocation for pool ${pool.pool_address}:`,
+          `  Error getting allocation for pool ${pool.pool_address}:`,
           err.message
         );
         return null;
@@ -110,7 +110,7 @@ export async function trackVaultTvl(): Promise<void> {
       .filter((alloc) => alloc !== null && alloc.amount > 0)
       .map((alloc) => alloc!);
     
-    console.log(`📊 Found ${allocations.length} pools with allocations`);
+    console.log(`Found ${allocations.length} pools with allocations`);
 
     // Calculate total allocated
     const totalAllocated = allocations.reduce(
@@ -124,7 +124,7 @@ export async function trackVaultTvl(): Promise<void> {
     // Verify against totalAssets from the contract (for debugging)
     if (Math.abs(totalTvl - totalAssets) > 0.01) {
       console.warn(
-        `⚠️  TVL mismatch: totalAssets=${totalAssets.toFixed(2)}, calculated=${totalTvl.toFixed(2)} (idle=${idleBalance.toFixed(2)} + allocated=${totalAllocated.toFixed(2)})`
+        `TVL mismatch: totalAssets=${totalAssets.toFixed(2)}, calculated=${totalTvl.toFixed(2)} (idle=${idleBalance.toFixed(2)} + allocated=${totalAllocated.toFixed(2)})`
       );
     }
 
@@ -158,7 +158,7 @@ export async function trackVaultTvl(): Promise<void> {
     );
     if (Math.abs(totalPercentage - 100) > 0.1) {
       console.warn(
-        `⚠️  Percentage sum is ${totalPercentage.toFixed(2)}%, expected ~100% (sum=${baseForPercentages.toFixed(2)}, idle=${idleBalance.toFixed(2)}, allocated=${totalAllocated.toFixed(2)})`
+        `Percentage sum is ${totalPercentage.toFixed(2)}%, expected ~100% (sum=${baseForPercentages.toFixed(2)}, idle=${idleBalance.toFixed(2)}, allocated=${totalAllocated.toFixed(2)})`
       );
     }
 
@@ -202,12 +202,12 @@ export async function trackVaultTvl(): Promise<void> {
     await vaultRecord.save();
 
     console.log(
-      `✅ Vault TVL tracked: $${totalTvl.toFixed(2)} (Idle: $${idleBalance.toFixed(
+      `Vault TVL tracked: $${totalTvl.toFixed(2)} (Idle: $${idleBalance.toFixed(
         2
       )}, Allocated: $${totalAllocated.toFixed(2)}, Pools: ${allocations.length})`
     );
   } catch (error: any) {
-    console.error("❌ Error tracking vault TVL:", error.message);
+    console.error("Error tracking vault TVL:", error.message);
     // Don't throw - allow cron job to continue
   }
 }

@@ -82,14 +82,14 @@ router.get("/test-formats", async (req: Request, res: Response) => {
         success: true,
         data: result,
       });
-      console.log(`✅ ${testCase.name} - SUCCESS`);
+      console.log(`${testCase.name} - SUCCESS`);
     } catch (error: any) {
       results.push({
         testCase: testCase.name,
         success: false,
         error: error.message,
       });
-      console.log(`❌ ${testCase.name} - FAILED`);
+      console.log(`${testCase.name} - FAILED`);
     }
   }
 

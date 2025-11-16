@@ -171,11 +171,11 @@ router.get("/vault-history", async (req: Request, res: Response) => {
  */
 router.post("/run", async (req: Request, res: Response) => {
   try {
-    console.log("🤖 Manual automation trigger received");
+    console.log("Manual automation trigger received");
 
     // Run automation asynchronously (don't wait for it to complete)
     runVaultAutomation().catch((error) => {
-      console.error("❌ Error in manual automation run:", error);
+      console.error("Error in manual automation run:", error);
     });
 
     res.json({

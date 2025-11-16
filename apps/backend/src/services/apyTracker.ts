@@ -415,9 +415,9 @@ export async function trackAllPoolsApy(): Promise<void> {
     }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`\n✅ APY tracking cycle completed in ${duration}s\n`);
+    console.log(`\nAPY tracking cycle completed in ${duration}s\n`);
   } catch (error) {
-    console.error("❌ Error in APY tracking cycle:", error);
+    console.error("Error in APY tracking cycle:", error);
   }
 }
 

@@ -41,9 +41,9 @@ async function startServer() {
     try {
       await connectDatabase();
     } catch (error) {
-      console.error("⚠️  Failed to connect to MongoDB:", error);
+      console.error("Failed to connect to MongoDB:", error);
       console.log(
-        "⚠️  Continuing without database - APY tracking will be disabled"
+        "Continuing without database - APY tracking will be disabled"
       );
       // Don't exit - allow server to start without database
     }
@@ -54,7 +54,7 @@ async function startServer() {
       process.env.ENABLE_CRON_JOBS === "true" ||
       process.env.NODE_ENV === "production";
 
-    console.log(`🔧 Cron jobs configuration:`);
+    console.log(`Cron jobs configuration:`);
     console.log(
       `   ENABLE_CRON_JOBS: ${process.env.ENABLE_CRON_JOBS || "not set"}`
     );
@@ -71,34 +71,32 @@ async function startServer() {
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`🚀 Backend server running on port ${PORT}`);
+      console.log(`Backend server running on port ${PORT}`);
       console.log(
-        `📊 Test GlueX API at: http://localhost:${PORT}/test-gluex/test`
+        `Test GlueX API at: http://localhost:${PORT}/test-gluex/test`
       );
       console.log(
-        `🔌 Database status: ${
-          getDatabaseStatus() ? "✅ Connected" : "❌ Disconnected"
-        }`
+        `Database status: ${getDatabaseStatus() ? "Connected" : "Disconnected"}`
       );
       if (enableCronJobs && getDatabaseStatus()) {
-        console.log(`📈 APY tracking active (every minute)`);
+        console.log(`APY tracking active (every minute)`);
       }
     });
   } catch (error) {
-    console.error("❌ Failed to start server:", error);
+    console.error("Failed to start server:", error);
     process.exit(1);
   }
 }
 
 // Graceful shutdown
 process.on("SIGINT", () => {
-  console.log("\n⚠️  Shutting down gracefully...");
+  console.log("\nShutting down gracefully...");
   stopCronJobs();
   process.exit(0);
 });
 
 process.on("SIGTERM", () => {
-  console.log("\n⚠️  Shutting down gracefully...");
+  console.log("\nShutting down gracefully...");
   stopCronJobs();
   process.exit(0);
 });

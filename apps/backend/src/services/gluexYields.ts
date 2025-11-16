@@ -60,7 +60,7 @@ export async function getPoolHistoricalApy(
     chain: chain,
   };
 
-  console.log("🚀 Making GlueX API request:", {
+  console.log("Making GlueX API request:", {
     url: `${GLUEX_YIELD_API_BASE}/historical-apy`,
     data: requestData,
   });
@@ -76,11 +76,11 @@ export async function getPoolHistoricalApy(
       }
     );
 
-    console.log("✅ GlueX API response success for pool:", poolAddress);
+    console.log("GlueX API response success for pool:", poolAddress);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error("❌ GlueX API Error Details:");
+      console.error("GlueX API Error Details:");
       console.error("  Status:", error.response?.status);
       console.error("  Status Text:", error.response?.statusText);
       console.error(
@@ -102,7 +102,7 @@ export async function getPoolHistoricalApy(
         JSON.stringify(requestData, null, 2)
       );
     } else {
-      console.error("❌ Non-Axios Error:", error);
+      console.error("Non-Axios Error:", error);
     }
     throw new Error(`Failed to fetch pool APY from GlueX: ${poolAddress}`);
   }
@@ -126,7 +126,7 @@ export async function getBestYield(
       chain: pool.chain,
     }));
 
-    console.log(`📊 Fetching yields for ${pools.length} pool(s)...`);
+    console.log(`Fetching yields for ${pools.length} pool(s)...`);
 
     // Fetch APY and TVL for all pools in parallel
     const poolPromises = pools.map(async (pool) => {
@@ -290,11 +290,11 @@ export async function getPoolTvl(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error(
-        `❌ Failed to fetch TVL for pool ${poolAddress}:`,
+        `Failed to fetch TVL for pool ${poolAddress}:`,
         error.response?.data
       );
     } else {
-      console.error(`❌ Error fetching TVL for pool ${poolAddress}:`, error);
+      console.error(`Error fetching TVL for pool ${poolAddress}:`, error);
     }
     // Return null instead of throwing to allow graceful degradation
     return null;

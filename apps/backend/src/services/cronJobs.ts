@@ -12,41 +12,41 @@ let vaultTvlJob: ScheduledTask | null = null;
  * Start all cron jobs
  */
 export function startCronJobs(): void {
-  console.log("⏰ Starting cron jobs...");
+  console.log("Starting cron jobs...");
 
   // APY tracking - every 5 minutes
   apyTrackingJob = cron.schedule("*/5 * * * *", async () => {
     // Check database connection
     if (!getDatabaseStatus()) {
-      console.error("⚠️  Skipping APY tracking - database not connected");
+      console.error("Skipping APY tracking - database not connected");
       return;
     }
 
     try {
       await trackAllPoolsApy();
     } catch (error) {
-      console.error("❌ Error in APY tracking cron job:", error);
+      console.error("Error in APY tracking cron job:", error);
     }
   });
 
-  console.log("✅ APY tracking cron job started (runs every 5 minutes)");
+  console.log("APY tracking cron job started (runs every 5 minutes)");
 
   // Vault TVL tracking - every 5 minutes
   vaultTvlJob = cron.schedule("*/5 * * * *", async () => {
     // Check database connection
     if (!getDatabaseStatus()) {
-      console.error("⚠️  Skipping vault TVL tracking - database not connected");
+      console.error("Skipping vault TVL tracking - database not connected");
       return;
     }
 
     try {
       await trackVaultTvl();
     } catch (error) {
-      console.error("❌ Error in vault TVL tracking cron job:", error);
+      console.error("Error in vault TVL tracking cron job:", error);
     }
   });
 
-  console.log("✅ Vault TVL tracking cron job started (runs every 5 minutes)");
+  console.log("Vault TVL tracking cron job started (runs every 5 minutes)");
 
   // Vault automation - every hour (at :00)
   // Note: node-cron doesn't handle unhandled promise rejections well,
@@ -55,22 +55,18 @@ export function startCronJobs(): void {
     // Wrap in immediate async function to handle promises properly
     (async () => {
       const now = new Date();
-      console.log(
-        `\n⏰ [CRON] Automation job triggered at ${now.toISOString()}`
-      );
+      console.log(`\n[CRON] Automation job triggered at ${now.toISOString()}`);
 
       try {
         // Check database connection
         const dbStatus = getDatabaseStatus();
         console.log(
           `   [CRON] Database status: ${
-            dbStatus ? "✅ Connected" : "❌ Disconnected"
+            dbStatus ? "Connected" : "Disconnected"
           }`
         );
         if (!dbStatus) {
-          console.error(
-            "⚠️  [CRON] Skipping automation - database not connected"
-          );
+          console.error("[CRON] Skipping automation - database not connected");
           return;
         }
 
@@ -87,7 +83,7 @@ export function startCronJobs(): void {
 
         if (missingVars.length > 0) {
           console.error(
-            `⚠️  [CRON] Skipping automation - missing environment variables: ${missingVars.join(
+            `[CRON] Skipping automation - missing environment variables: ${missingVars.join(
               ", "
             )}`
           );
@@ -99,10 +95,10 @@ export function startCronJobs(): void {
         );
         await runVaultAutomation();
         console.log(
-          `✅ [CRON] Automation job completed successfully at ${new Date().toISOString()}`
+          `[CRON] Automation job completed successfully at ${new Date().toISOString()}`
         );
       } catch (error: any) {
-        console.error("❌ [CRON] Error in automation cron job:", error);
+        console.error("[CRON] Error in automation cron job:", error);
         console.error("   [CRON] Error details:", error.message);
         if (error.stack) {
           console.error("   [CRON] Stack trace:", error.stack);
@@ -112,28 +108,28 @@ export function startCronJobs(): void {
     })().catch((error: any) => {
       // Catch any unhandled promise rejections
       console.error(
-        "❌ [CRON] Unhandled promise rejection in automation cron:",
+        "[CRON] Unhandled promise rejection in automation cron:",
         error
       );
       console.error("   [CRON] This should not happen - check the code above");
     });
   });
 
-  console.log("✅ Vault automation cron job started (runs every hour at :00)");
+  console.log("Vault automation cron job started (runs every hour at :00)");
 
   // Verify the job was actually created
   if (!automationJob) {
-    console.error("❌ Failed to create automation cron job!");
+    console.error("Failed to create automation cron job!");
   } else {
-    console.log("   ✓ Automation cron job object created successfully");
+    console.log("   Automation cron job object created successfully");
   }
 
   // Run once immediately on startup (after a delay)
   setTimeout(async () => {
     if (getDatabaseStatus()) {
-      console.log("🚀 Running initial APY tracking...");
+      console.log("Running initial APY tracking...");
       await trackAllPoolsApy();
-      console.log("🚀 Running initial vault TVL tracking...");
+      console.log("Running initial vault TVL tracking...");
       await trackVaultTvl();
       // Note: Automation runs on schedule (every hour), not on startup
     }
@@ -144,21 +140,21 @@ export function startCronJobs(): void {
  * Stop all cron jobs
  */
 export function stopCronJobs(): void {
-  console.log("⏰ Stopping cron jobs...");
+  console.log("Stopping cron jobs...");
 
   if (apyTrackingJob) {
     apyTrackingJob.stop();
-    console.log("✅ APY tracking cron job stopped");
+    console.log("APY tracking cron job stopped");
   }
 
   if (automationJob) {
     automationJob.stop();
-    console.log("✅ Vault automation cron job stopped");
+    console.log("Vault automation cron job stopped");
   }
 
   if (vaultTvlJob) {
     vaultTvlJob.stop();
-    console.log("✅ Vault TVL tracking cron job stopped");
+    console.log("Vault TVL tracking cron job stopped");
   }
 }
 
