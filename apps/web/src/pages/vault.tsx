@@ -61,7 +61,7 @@ export default function VaultPage() {
 
   // Vault chart selection state
   const [selectedVaultChart, setSelectedVaultChart] = useState<"apy" | "tvl">(
-    "apy"
+    "tvl"
   );
 
   const toggleCard = (cardName: keyof typeof expandedCards) => {
@@ -934,19 +934,19 @@ export default function VaultPage() {
                   <div className="chart-selector">
                     <button
                       className={`chart-button ${
-                        selectedVaultChart === "apy" ? "active" : ""
-                      }`}
-                      onClick={() => setSelectedVaultChart("apy")}
-                    >
-                      Vault APY
-                    </button>
-                    <button
-                      className={`chart-button ${
                         selectedVaultChart === "tvl" ? "active" : ""
                       }`}
                       onClick={() => setSelectedVaultChart("tvl")}
                     >
                       Vault TVL
+                    </button>
+                    <button
+                      className={`chart-button ${
+                        selectedVaultChart === "apy" ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedVaultChart("apy")}
+                    >
+                      Vault APY
                     </button>
                   </div>
                 </div>

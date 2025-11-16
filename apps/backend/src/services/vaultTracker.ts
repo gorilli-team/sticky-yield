@@ -118,7 +118,7 @@ export async function trackVaultTvl(): Promise<void> {
       0
     );
 
-    // TVL = idle balance + total allocated
+    // TVL = idle balance + total allocated (sum of all allocations)
     const totalTvl = idleBalance + totalAllocated;
     
     // Verify against totalAssets from the contract (for debugging)

@@ -16,6 +16,7 @@ import { VAULT_ADDRESS } from "@/config/contracts";
 interface VaultTvlDataPoint {
   timestamp: string;
   tvl: number | null;
+  [key: string]: string | number | null | undefined; // For dynamic allocation keys
 }
 
 const VaultTvlChart: React.FC = () => {
@@ -24,6 +25,7 @@ const VaultTvlChart: React.FC = () => {
   >("7d");
   const [chartData, setChartData] = useState<VaultTvlDataPoint[]>([]);
   const [latestData, setLatestData] = useState<any>(null);
+  const [poolAddresses, setPoolAddresses] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,20 +58,83 @@ const VaultTvlChart: React.FC = () => {
           return;
         }
 
+        // Collect all unique pool addresses across all data points for consistent stacking
+        // Exclude vault address (idle funds) since it's rendered separately
+        const allPoolAddressesSet = new Set<string>();
+        historyData.forEach((point: any) => {
+          if (point.allocations && Array.isArray(point.allocations)) {
+            point.allocations.forEach((alloc: any) => {
+              if (
+                alloc.pool_address &&
+                alloc.amount > 0 &&
+                alloc.pool_address.toLowerCase() !== VAULT_ADDRESS.toLowerCase()
+              ) {
+                allPoolAddressesSet.add(alloc.pool_address);
+              }
+            });
+          }
+        });
+        const allPoolAddresses = Array.from(allPoolAddressesSet);
+        setPoolAddresses(allPoolAddresses);
+
         // Transform data for chart
         const chartDataPoints: VaultTvlDataPoint[] = historyData
-          .filter((point: any) => point.total_tvl !== null && point.total_tvl !== undefined)
+          .filter((point: any) => {
+            // Calculate total from allocations array
+            let calculatedTotal = point.idle_balance || 0;
+            if (point.allocations && Array.isArray(point.allocations)) {
+              calculatedTotal += point.allocations.reduce(
+                (sum: number, alloc: any) => sum + (alloc.amount || 0),
+                0
+              );
+            }
+            return calculatedTotal > 0;
+          })
           .map((point: any) => {
             const timestamp = new Date(point.timestamp);
-            return {
+            const dataPoint: VaultTvlDataPoint = {
               timestamp: timestamp.toLocaleString("en-US", {
                 month: "short",
                 day: "numeric",
                 hour: "2-digit",
                 minute: "2-digit",
               }),
-              tvl: point.total_tvl,
             };
+
+            // Calculate total TVL from allocations array
+            let calculatedTvl = point.idle_balance || 0;
+            if (point.allocations && Array.isArray(point.allocations)) {
+              calculatedTvl += point.allocations.reduce(
+                (sum: number, alloc: any) => sum + (alloc.amount || 0),
+                0
+              );
+            }
+            dataPoint.tvl = calculatedTvl;
+
+            // Add idle balance if present
+            if (point.idle_balance && point.idle_balance > 0) {
+              dataPoint["idle_balance"] = point.idle_balance;
+            } else {
+              dataPoint["idle_balance"] = 0;
+            }
+
+            // Add each allocation as a separate data point (excluding vault address/idle funds)
+            allPoolAddresses.forEach((poolAddr) => {
+              const alloc = point.allocations?.find(
+                (a: any) =>
+                  a.pool_address &&
+                  a.pool_address.toLowerCase() === poolAddr.toLowerCase() &&
+                  a.pool_address.toLowerCase() !== VAULT_ADDRESS.toLowerCase()
+              );
+              if (alloc && alloc.amount > 0) {
+                dataPoint[poolAddr] = alloc.amount;
+                dataPoint[`${poolAddr}_desc`] = alloc.pool_description || "Unknown Pool";
+              } else {
+                dataPoint[poolAddr] = 0;
+              }
+            });
+
+            return dataPoint;
           });
 
         setChartData(chartDataPoints);
@@ -174,10 +239,35 @@ const VaultTvlChart: React.FC = () => {
               margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             >
               <defs>
-                <linearGradient id="colorTvl" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                <linearGradient id="colorIdle" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6b7280" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#6b7280" stopOpacity={0}/>
                 </linearGradient>
+                {poolAddresses.map((poolAddr, index) => {
+                  const colors = [
+                    "#10b981", // green
+                    "#3b82f6", // blue
+                    "#8b5cf6", // purple
+                    "#ec4899", // pink
+                    "#f59e0b", // amber
+                    "#ef4444", // red
+                    "#06b6d4", // cyan
+                  ];
+                  const color = colors[index % colors.length];
+                  return (
+                    <linearGradient
+                      key={`color-${poolAddr}`}
+                      id={`color-${poolAddr}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor={color} stopOpacity={0.4} />
+                      <stop offset="95%" stopColor={color} stopOpacity={0} />
+                    </linearGradient>
+                  );
+                })}
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis
@@ -207,19 +297,59 @@ const VaultTvlChart: React.FC = () => {
                   borderRadius: "8px",
                   color: "#ffffff",
                 }}
-                formatter={formatTooltipValue}
+                formatter={(value: number, name: string, props: any) => {
+                  if (name === "idle_balance") {
+                    return [formatTooltipValue(value), "Idle Funds"];
+                  }
+                  // Get description from the data point
+                  const descKey = `${name}_desc`;
+                  const description = props.payload?.[descKey] || name.slice(0, 8) + "...";
+                  return [formatTooltipValue(value), description];
+                }}
               />
+              {/* Stacked areas: idle first (bottom), then each pool allocation */}
               <Area
                 type="monotone"
-                dataKey="tvl"
-                stroke="#10b981"
-                strokeWidth={2}
-                fill="url(#colorTvl)"
+                dataKey="idle_balance"
+                stackId="1"
+                stroke="#6b7280"
+                strokeWidth={1}
+                fill="url(#colorIdle)"
                 fillOpacity={1}
-                activeDot={{ r: 5, fill: "#10b981" }}
                 connectNulls={false}
-                name="Vault TVL"
+                name="Idle Funds"
               />
+              {poolAddresses.map((poolAddr, index) => {
+                const colors = [
+                  "#10b981", // green
+                  "#3b82f6", // blue
+                  "#8b5cf6", // purple
+                  "#ec4899", // pink
+                  "#f59e0b", // amber
+                  "#ef4444", // red
+                  "#06b6d4", // cyan
+                ];
+                const color = colors[index % colors.length];
+                return (
+                  <Area
+                    key={poolAddr}
+                    type="monotone"
+                    dataKey={poolAddr}
+                    stackId="1"
+                    stroke={color}
+                    strokeWidth={index === poolAddresses.length - 1 ? 2 : 1}
+                    fill={`url(#color-${poolAddr})`}
+                    fillOpacity={1}
+                    activeDot={
+                      index === poolAddresses.length - 1
+                        ? { r: 5, fill: color }
+                        : undefined
+                    }
+                    connectNulls={false}
+                    name={poolAddr}
+                  />
+                );
+              })}
             </AreaChart>
           </ResponsiveContainer>
         )}
