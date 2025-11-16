@@ -46,9 +46,18 @@ async function startServer() {
       // Don't exit - allow server to start without database
     }
 
-    // Start cron jobs (will skip if database not connected)
-    //this is already done in the deployed server
-    // startCronJobs();
+    // Start cron jobs only if enabled via environment variable
+    // Set ENABLE_CRON_JOBS=true in production, leave unset/false for local development
+    const enableCronJobs =
+      process.env.ENABLE_CRON_JOBS === "true" ||
+      process.env.NODE_ENV === "production";
+    if (enableCronJobs) {
+      startCronJobs();
+    } else {
+      console.log(
+        "⏸️  Cron jobs disabled (set ENABLE_CRON_JOBS=true to enable)"
+      );
+    }
 
     // Start server
     app.listen(PORT, () => {
@@ -61,7 +70,7 @@ async function startServer() {
           getDatabaseStatus() ? "✅ Connected" : "❌ Disconnected"
         }`
       );
-      if (getDatabaseStatus()) {
+      if (enableCronJobs && getDatabaseStatus()) {
         console.log(`📈 APY tracking active (every minute)`);
       }
     });

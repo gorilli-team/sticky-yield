@@ -24,6 +24,24 @@ export const TRACKED_POOLS: PoolConfig[] = [
     chain: "hyperevm",
   },
   {
+    description: "HYPURRFI - hbUSDT < > USD₮0",
+    url: "https://app.hypurr.fi/markets/isolated/999/0xcDA6D421d5edB4267D99B4b66Dd423Ca1B8d4410",
+    pool_address: "0xcDA6D421d5edB4267D99B4b66Dd423Ca1B8d4410",
+    chain: "hyperevm",
+  },
+  {
+    description: "HYPURRFI - hbUSDT < > USD₮0",
+    url: "https://app.hypurr.fi/markets/isolated/999/0x1C5164A764844356d57654ea83f9f1B72Cd10db5",
+    pool_address: "0x1C5164A764844356d57654ea83f9f1B72Cd10db5",
+    chain: "hyperevm",
+  },
+  {
+    description: "HYPURRFI - hwHLP < > USD₮0",
+    url: "https://app.hypurr.fi/markets/isolated/999/0x2c910F67DbF81099e6f8e126E7265d7595DC20aD",
+    pool_address: "0x2c910F67DbF81099e6f8e126E7265d7595DC20aD",
+    chain: "hyperevm",
+  },
+  {
     description: "Felix USD₮0",
     url: "https://www.usefelix.xyz/vanilla/lend",
     pool_address: "0xfc5126377f0efc0041c0969ef9ba903ce67d151e",

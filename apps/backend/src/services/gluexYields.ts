@@ -1,4 +1,5 @@
 import axios from "axios";
+import { TRACKED_POOLS } from "./apyTracker";
 
 const GLUEX_YIELD_API_BASE = "https://yield-api.gluex.xyz";
 
@@ -101,49 +102,14 @@ export async function getPoolHistoricalApy(
  */
 export async function getBestYield(): Promise<YieldResponse> {
   try {
-    // Example pools - add more pool addresses here
-    const pools: HistoricalApyRequest[] = [
-      {
-        description: "USD₮0 Hypurr",
-        url: "https://app.hypurr.fi/markets/isolated/999/0x543DBF5C74C6fb7C14f62b1Ae010a3696e22E3A0",
-        pool_address: "0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007",
-        chain: "hyperevm",
-      },
-      {
-        //HYPURRFI - PT-hwHLP < > USD₮0
-        description: "HYPURRFI - PT-hwHLP < > USD₮0",
-        url: "https://app.hypurr.fi/markets/isolated/999/0x543DBF5C74C6fb7C14f62b1Ae010a3696e22E3A0",
-        pool_address: "0x543dbf5c74c6fb7c14f62b1ae010a3696e22e3a0",
-        chain: "hyperevm",
-      },
-      {
-        //Felix USD₮0
-        description: "Felix USD₮0",
-        url: "https://www.usefelix.xyz/vanilla/lend",
-        pool_address: "0xfc5126377f0efc0041c0969ef9ba903ce67d151e",
-        chain: "hyperevm",
-      },
-      {
-        //Felix USD₮0 Frontier
-        description: "Felix USD₮0 Frontier",
-        url: "https://www.usefelix.xyz/frontier/lend",
-        pool_address: "0x9896a8605763106e57A51aa0a97Fe8099E806bb3",
-        chain: "hyperevm",
-      },
-      {
-        description: "Hypurr LHYPE < > USDXL",
-        url: "https://app.hypurr.fi/markets/isolated/999/0xAeedD5B6d42e0F077ccF3E7A78ff70b8cB217329",
-        pool_address: "0xAeedD5B6d42e0F077ccF3E7A78ff70b8cB217329",
-        chain: "hyperevm",
-      },
-      {
-        description: "Hypurr MHYPE",
-        url: "https://app.hypurr.fi/markets/isolated/999/0xE4847Cb23dAd9311b9907497EF8B39d00AC1DE14",
-        pool_address: "0xE4847Cb23dAd9311b9907497EF8B39d00AC1DE14",
-        chain: "hyperevm",
-      },
-      // Add more pools here as needed
-    ];
+    // Use TRACKED_POOLS from apyTracker as the single source of truth
+    // This ensures consistency between cron tracking and API responses
+    const pools: HistoricalApyRequest[] = TRACKED_POOLS.map((pool) => ({
+      description: pool.description,
+      url: pool.url,
+      pool_address: pool.pool_address,
+      chain: pool.chain,
+    }));
 
     console.log(`📊 Fetching yields for ${pools.length} pool(s)...`);
 
