@@ -1,7 +1,7 @@
 /**
  * Opportunity Score Calculator
  * 
- * Implements a sophisticated formula that balances:
+ * Implements a formula that balances:
  * 1. Stability-Adjusted APY (using average and standard deviation)
  * 2. TVL Confidence Factor (using sigmoid function)
  * 

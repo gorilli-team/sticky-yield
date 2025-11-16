@@ -1,6 +1,6 @@
 # Sticky Yield
 
-A sophisticated yield optimization platform that automatically reallocates user deposits across the highest-yielding pools on HyperEVM, maximizing returns while considering stability and pool capacity.
+A yield optimization platform that automatically reallocates user deposits across the highest-yielding pools on HyperEVM, maximizing returns while considering stability and pool capacity.
 
 ## Purpose
 
@@ -49,7 +49,7 @@ The system continuously monitors multiple yield pools by fetching real-time and 
 
 ### 2. Opportunity Score Calculation
 
-The system uses a **sophisticated Opportunity Score** to identify the best pools, balancing yield potential with stability and capacity.
+The system uses a **Opportunity Score** to identify the best pools, balancing yield potential with stability and capacity.
 
 #### The Formula
 
@@ -202,7 +202,6 @@ This is a **Turborepo monorepo** containing:
 ┌─────────────────┐
 │  Yield Pools    │
 │                 │
-│ • GlueX         │
 │ • Hypurr        │
 │ • Felix         │
 │ • etc.          │
@@ -412,7 +411,7 @@ ETHERSCAN_API_KEY=your_etherscan_key
 ## Key Features
 
 1. **Automated Yield Optimization**: Continuously monitors and reallocates funds to highest-yielding pools
-2. **Opportunity Score**: Sophisticated metric balancing yield, stability, and capacity
+2. **Opportunity Score**: Metric balancing yield, stability, and capacity
 3. **Historical Analysis**: Tracks APY over time to identify stable opportunities
 4. **Privy Wallet Integration**: Seamless wallet connection and authentication
 5. **GlueX Protocol Integration**: 

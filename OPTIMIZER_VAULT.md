@@ -414,7 +414,6 @@ The backend automation system (`apps/backend/src/services/vaultAutomation.ts`) p
 ┌─────────────────┐
 │  Yield Pools    │
 │                 │
-│ • GlueX         │
 │ • Hypurr        │
 │ • Felix         │
 │ • etc.          │

@@ -20,12 +20,12 @@ export default function OpportunityScorePage() {
         <div className="opportunity-score-content">
           <div className="opportunity-score-explanation">
             <p className="explanation-intro">
-              The Opportunity Score is a sophisticated metric that balances
+              The Opportunity Score is a metric that balances
               <strong> current yield potential</strong> with{" "}
               <strong>historical stability</strong> and{" "}
               <strong>pool capacity</strong>. It helps identify pools that offer
-              sustainable, trustworthy returns rather than chasing temporary high
-              yields.
+              sustainable, trustworthy returns rather than chasing temporary
+              high yields.
             </p>
 
             <div className="formula-section">
@@ -44,13 +44,12 @@ export default function OpportunityScorePage() {
             <div className="formula-section">
               <h4>1. Stability-Adjusted APY</h4>
               <p className="formula-description">
-                This component penalizes volatile pools and rewards stable yields:
+                This component penalizes volatile pools and rewards stable
+                yields:
               </p>
               <div className="formula-block">
                 <div className="formula-main">
-                  <span className="formula-label">
-                    Stability-Adjusted APY
-                  </span>
+                  <span className="formula-label">Stability-Adjusted APY</span>
                   <span className="formula-equals">=</span>
                   <span className="formula-components">
                     APY<sub>avg 24h</sub> - (Risk Penalty × APY
@@ -86,8 +85,8 @@ export default function OpportunityScorePage() {
             <div className="formula-section">
               <h4>2. TVL Confidence Factor</h4>
               <p className="formula-description">
-                This factor ensures the pool can safely absorb your assets without
-                yield dilution:
+                This factor ensures the pool can safely absorb your assets
+                without yield dilution:
               </p>
               <div className="formula-block">
                 <div className="formula-main">
@@ -110,12 +109,13 @@ export default function OpportunityScorePage() {
                   <strong>k</strong>: Sigmoid steepness (default: 20)
                 </li>
                 <li>
-                  <strong>m</strong>: Midpoint ratio (default: 0.1 = 10% of pool)
+                  <strong>m</strong>: Midpoint ratio (default: 0.1 = 10% of
+                  pool)
                 </li>
               </ul>
               <div className="formula-example">
-                <strong>Example:</strong> Pool with $50M TVL, your $100k assets →
-                Ratio = 500 → Confidence Factor ≈ 100% (very safe)
+                <strong>Example:</strong> Pool with $50M TVL, your $100k assets
+                → Ratio = 500 → Confidence Factor ≈ 100% (very safe)
               </div>
             </div>
 
@@ -123,12 +123,12 @@ export default function OpportunityScorePage() {
               <h4>Final Score Interpretation</h4>
               <ul className="formula-details">
                 <li>
-                  <strong>Higher Score</strong>: Better opportunity (stable yield +
-                  large pool capacity)
+                  <strong>Higher Score</strong>: Better opportunity (stable
+                  yield + large pool capacity)
                 </li>
                 <li>
-                  <strong>Negative Score</strong>: Set to 0 (risk-adjusted return
-                  is unacceptable)
+                  <strong>Negative Score</strong>: Set to 0 (risk-adjusted
+                  return is unacceptable)
                 </li>
                 <li>
                   <strong>Score = 0</strong>: Either no data available or
@@ -136,9 +136,9 @@ export default function OpportunityScorePage() {
                 </li>
               </ul>
               <p className="formula-note">
-                <strong>Note:</strong> The system automatically allocates to pools
-                with the highest opportunity scores, ensuring optimal risk-adjusted
-                returns.
+                <strong>Note:</strong> The system automatically allocates to
+                pools with the highest opportunity scores, ensuring optimal
+                risk-adjusted returns.
               </p>
             </div>
           </div>
@@ -147,4 +147,3 @@ export default function OpportunityScorePage() {
     </Layout>
   );
 }
-
