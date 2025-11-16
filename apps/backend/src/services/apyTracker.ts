@@ -137,6 +137,41 @@ async function trackPoolApy(pool: PoolConfig): Promise<void> {
           tvl_current: scoreResult.tvlCurrent,
           my_asset_size: scoreResult.myAssetSize,
         };
+
+        // Log opportunity score calculation details
+        console.log(
+          `📊 Opportunity Score for ${
+            pool.description
+          }: ${opportunityScore.toFixed(2)}`
+        );
+        console.log(
+          `   └─ APY Avg 24h: ${scoreResult.apyAvg24h.toFixed(
+            2
+          )}%, Std: ${scoreResult.apyStd24h.toFixed(2)}%`
+        );
+        console.log(
+          `   └─ Stability Adjusted APY: ${scoreResult.stabilityAdjustedApy.toFixed(
+            2
+          )}%`
+        );
+        console.log(
+          `   └─ TVL Confidence: ${(
+            scoreResult.tvlConfidenceFactor * 100
+          ).toFixed(1)}% (TVL: $${tvlUsd.toLocaleString(undefined, {
+            maximumFractionDigits: 0,
+          })}, Asset Size: $${defaultAssetSize.toLocaleString()})`
+        );
+      } else {
+        if (!stats || stats.count === 0) {
+          console.log(
+            `⚠️  Cannot calculate opportunity score for ${pool.description}: No historical APY data (need at least 1 data point)`
+          );
+        }
+        if (!tvlUsd) {
+          console.log(
+            `⚠️  Cannot calculate opportunity score for ${pool.description}: No TVL data available`
+          );
+        }
       }
     } catch (scoreError) {
       console.error(
@@ -184,6 +219,17 @@ async function trackPoolApy(pool: PoolConfig): Promise<void> {
         2
       )}%)${tvlInfo}${scoreInfo}`
     );
+
+    // Additional opportunity score summary if available
+    if (opportunityScore !== null && opportunityScoreDetails) {
+      console.log(
+        `   📈 Opportunity Score Details: Stability APY ${opportunityScoreDetails.stability_adjusted_apy.toFixed(
+          2
+        )}% × TVL Confidence ${(
+          opportunityScoreDetails.tvl_confidence_factor * 100
+        ).toFixed(1)}% = ${opportunityScore.toFixed(2)}`
+      );
+    }
   } catch (error: any) {
     console.error(
       `❌ Error tracking APY for ${pool.description}:`,
