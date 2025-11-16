@@ -7,7 +7,7 @@ import Layout from "@/components/Layout";
 import ApyChart from "@/components/ApyChart";
 import TvlChart from "@/components/TvlChart";
 import OpportunityScoreChart from "@/components/OpportunityScoreChart";
-import { getLatestApy, getBestYield } from "@/lib/api";
+import { getLatestApy, getBestYield, getLatestMarketAverage } from "@/lib/api";
 import {
   VAULT_ADDRESS,
   ASSET_TOKEN,
@@ -39,6 +39,25 @@ export default function VaultPage() {
   const [vaultTotalAssets, setVaultTotalAssets] = useState("0");
   const [vaultIdleBalance, setVaultIdleBalance] = useState("0");
   const [isVaultOwner, setIsVaultOwner] = useState(false);
+
+  // Market averages
+  const [marketAverageToken, setMarketAverageToken] = useState<any>(null);
+  const [marketAverageAll, setMarketAverageAll] = useState<any>(null);
+  const [loadingMarketAverage, setLoadingMarketAverage] = useState(false);
+
+  // Expanded states for cards
+  const [expandedCards, setExpandedCards] = useState({
+    marketAverageToken: false,
+    marketAverageAll: false,
+    bestPool: false,
+  });
+
+  const toggleCard = (cardName: keyof typeof expandedCards) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [cardName]: !prev[cardName],
+    }));
+  };
 
   // Fund allocations
   const [allocations, setAllocations] = useState<
@@ -168,6 +187,36 @@ export default function VaultPage() {
       }
     } catch (err: any) {
       console.error("Error loading best pool:", err);
+    }
+  };
+
+  // Load market averages
+  const loadMarketAverages = async () => {
+    setLoadingMarketAverage(true);
+    try {
+      // Load market average for the asset token
+      try {
+        const tokenMarketAvg = await getLatestMarketAverage(ASSET_TOKEN);
+        if (tokenMarketAvg.success && tokenMarketAvg.market_average) {
+          setMarketAverageToken(tokenMarketAvg.market_average);
+        }
+      } catch (err) {
+        console.error("Error loading token market average:", err);
+      }
+
+      // Load overall market average (all tokens)
+      try {
+        const allMarketAvg = await getLatestMarketAverage();
+        if (allMarketAvg.success && allMarketAvg.market_average) {
+          setMarketAverageAll(allMarketAvg.market_average);
+        }
+      } catch (err) {
+        console.error("Error loading overall market average:", err);
+      }
+    } catch (err: any) {
+      console.error("Error loading market averages:", err);
+    } finally {
+      setLoadingMarketAverage(false);
     }
   };
 
@@ -452,8 +501,12 @@ export default function VaultPage() {
       loadTransactions();
     }
     loadBestPool();
-    // Refresh best pool every 30 seconds
-    const interval = setInterval(loadBestPool, 30000);
+    loadMarketAverages();
+    // Refresh best pool and market averages every 30 seconds
+    const interval = setInterval(() => {
+      loadBestPool();
+      loadMarketAverages();
+    }, 30000);
     return () => clearInterval(interval);
   }, [authenticated, wallets]);
 
@@ -1059,49 +1112,156 @@ export default function VaultPage() {
 
             {/* Right Side - User Interactions */}
             <div className="vault-right">
+              {/* Market Average Cards */}
+              <div className="market-average-cards">
+                {/* Token-specific Market Average */}
+                {marketAverageToken && (
+                  <div className="market-average-card">
+                    <div
+                      className="market-average-header clickable"
+                      onClick={() => toggleCard("marketAverageToken")}
+                    >
+                      <div>
+                        <h4>Market Average (USD₮0)</h4>
+                        <span className="market-average-value">
+                          {marketAverageToken.market_avg_apy?.toFixed(2) || "0"}
+                          %
+                        </span>
+                      </div>
+                      <span className="expand-icon">
+                        {expandedCards.marketAverageToken ? "▼" : "▶"}
+                      </span>
+                    </div>
+                    {expandedCards.marketAverageToken && (
+                      <div className="market-average-details">
+                        <div className="market-average-detail">
+                          <span className="detail-label">Total TVL:</span>
+                          <span className="detail-value">
+                            $
+                            {formatNumber(
+                              marketAverageToken.total_tvl_usd?.toString() ||
+                                "0",
+                              0
+                            )}
+                          </span>
+                        </div>
+                        <div className="market-average-detail">
+                          <span className="detail-label">Pools:</span>
+                          <span className="detail-value">
+                            {marketAverageToken.pool_count || 0}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Overall Market Average */}
+                {marketAverageAll && (
+                  <div className="market-average-card">
+                    <div
+                      className="market-average-header clickable"
+                      onClick={() => toggleCard("marketAverageAll")}
+                    >
+                      <div>
+                        <h4>Market Average (All Tokens)</h4>
+                        <span className="market-average-value">
+                          {marketAverageAll.market_avg_apy?.toFixed(2) || "0"}%
+                        </span>
+                      </div>
+                      <span className="expand-icon">
+                        {expandedCards.marketAverageAll ? "▼" : "▶"}
+                      </span>
+                    </div>
+                    {expandedCards.marketAverageAll && (
+                      <div className="market-average-details">
+                        <div className="market-average-detail">
+                          <span className="detail-label">Total TVL:</span>
+                          <span className="detail-value">
+                            $
+                            {formatNumber(
+                              marketAverageAll.total_tvl_usd?.toString() || "0",
+                              0
+                            )}
+                          </span>
+                        </div>
+                        <div className="market-average-detail">
+                          <span className="detail-label">Pools:</span>
+                          <span className="detail-value">
+                            {marketAverageAll.pool_count || 0}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {loadingMarketAverage &&
+                  !marketAverageToken &&
+                  !marketAverageAll && (
+                    <div className="market-average-card">
+                      <div className="loading-state">
+                        Loading market averages...
+                      </div>
+                    </div>
+                  )}
+              </div>
+
               {/* Best Pool Card */}
               {bestPool && (
                 <div className="best-pool-card">
-                  <div className="best-pool-header">
-                    <h4>Current Best Pool</h4>
-                    <span className="best-apy">
-                      {bestPool.opportunity_score !== null &&
-                      bestPool.opportunity_score !== undefined
-                        ? `Score: ${bestPool.opportunity_score.toFixed(2)}`
-                        : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`}
-                    </span>
-                  </div>
-                  <p className="best-pool-name">{bestPool.description}</p>
-                  {bestPool.opportunity_score !== null &&
-                    bestPool.opportunity_score !== undefined && (
-                      <div
-                        className="pool-apy-info"
-                        style={{
-                          marginTop: "0.5rem",
-                          fontSize: "0.9rem",
-                          opacity: 0.8,
-                        }}
-                      >
-                        APY: {bestPool.total_apy?.toFixed(2) || "0"}%
-                      </div>
-                    )}
-                  {bestPool.tvl_usd && (
-                    <div className="pool-tvl">
-                      <span className="tvl-label">TVL:</span>
-                      <span className="tvl-value">
-                        ${formatNumber(bestPool.tvl_usd.toString(), 0)}
+                  <div
+                    className="best-pool-header clickable"
+                    onClick={() => toggleCard("bestPool")}
+                  >
+                    <div>
+                      <h4>Current Best Pool</h4>
+                      <span className="best-apy">
+                        {bestPool.opportunity_score !== null &&
+                        bestPool.opportunity_score !== undefined
+                          ? `Score: ${bestPool.opportunity_score.toFixed(2)}`
+                          : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`}
                       </span>
                     </div>
-                  )}
-                  {bestPool.url && (
-                    <a
-                      href={bestPool.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="pool-link"
-                    >
-                      View Pool Details ↗
-                    </a>
+                    <span className="expand-icon">
+                      {expandedCards.bestPool ? "▼" : "▶"}
+                    </span>
+                  </div>
+                  {expandedCards.bestPool && (
+                    <div className="best-pool-details">
+                      <p className="best-pool-name">{bestPool.description}</p>
+                      {bestPool.opportunity_score !== null &&
+                        bestPool.opportunity_score !== undefined && (
+                          <div
+                            className="pool-apy-info"
+                            style={{
+                              marginTop: "0.5rem",
+                              fontSize: "0.9rem",
+                              opacity: 0.8,
+                            }}
+                          >
+                            APY: {bestPool.total_apy?.toFixed(2) || "0"}%
+                          </div>
+                        )}
+                      {bestPool.tvl_usd && (
+                        <div className="pool-tvl">
+                          <span className="tvl-label">TVL:</span>
+                          <span className="tvl-value">
+                            ${formatNumber(bestPool.tvl_usd.toString(), 0)}
+                          </span>
+                        </div>
+                      )}
+                      {bestPool.url && (
+                        <a
+                          href={bestPool.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="pool-link"
+                        >
+                          View Pool Details ↗
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
