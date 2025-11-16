@@ -48,10 +48,10 @@ export function startCronJobs(): void {
 
   console.log("✅ Vault TVL tracking cron job started (runs every 5 minutes)");
 
-  // Vault automation - every 5 minutes
+  // Vault automation - every hour (at :00)
   // Note: node-cron doesn't handle unhandled promise rejections well,
   // so we wrap everything in a promise that we explicitly catch
-  automationJob = cron.schedule("*/5 * * * *", () => {
+  automationJob = cron.schedule("0 * * * *", () => {
     // Wrap in immediate async function to handle promises properly
     (async () => {
       const now = new Date();
@@ -119,7 +119,7 @@ export function startCronJobs(): void {
     });
   });
 
-  console.log("✅ Vault automation cron job started (runs every 5 minutes)");
+  console.log("✅ Vault automation cron job started (runs every hour at :00)");
 
   // Verify the job was actually created
   if (!automationJob) {
@@ -135,15 +135,7 @@ export function startCronJobs(): void {
       await trackAllPoolsApy();
       console.log("🚀 Running initial vault TVL tracking...");
       await trackVaultTvl();
-      console.log("🚀 Running initial automation test...");
-      // Test automation once on startup to verify it works
-      try {
-        console.log("   [STARTUP] Testing automation...");
-        await runVaultAutomation();
-        console.log("   [STARTUP] ✅ Automation test completed");
-      } catch (error: any) {
-        console.error("   [STARTUP] ❌ Automation test failed:", error.message);
-      }
+      // Note: Automation runs on schedule (every hour), not on startup
     }
   }, 5000); // Wait 5 seconds for everything to initialize
 }
@@ -187,7 +179,7 @@ export function getCronJobsStatus() {
     },
     vaultAutomation: {
       active: automationJob ? true : false,
-      schedule: "*/5 * * * *",
+      schedule: "0 * * * *",
       description: "Runs vault automation (reallocation logic)",
     },
   };
