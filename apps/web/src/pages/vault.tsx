@@ -7,6 +7,8 @@ import Layout from "@/components/Layout";
 import ApyChart from "@/components/ApyChart";
 import TvlChart from "@/components/TvlChart";
 import OpportunityScoreChart from "@/components/OpportunityScoreChart";
+import VaultApyChart from "@/components/VaultApyChart";
+import VaultTvlChart from "@/components/VaultTvlChart";
 import { getLatestApy, getBestYield, getLatestMarketAverage } from "@/lib/api";
 import {
   VAULT_ADDRESS,
@@ -56,6 +58,11 @@ export default function VaultPage() {
   const [selectedChart, setSelectedChart] = useState<
     "opportunity" | "apy" | "tvl"
   >("opportunity");
+
+  // Vault chart selection state
+  const [selectedVaultChart, setSelectedVaultChart] = useState<"apy" | "tvl">(
+    "apy"
+  );
 
   const toggleCard = (cardName: keyof typeof expandedCards) => {
     setExpandedCards((prev) => ({
@@ -275,11 +282,25 @@ export default function VaultPage() {
         provider
       );
 
-      // Check actual token balance in each pool contract for the vault address
+      // Check allocations using vaultAllocations mapping (primary source of truth)
       const allocationPromises = tokenPools.map(async (pool: any) => {
         try {
-          // Method 1: Check if pool is a vault that tracks shares
-          // Get vault's shares/balance from the pool vault contract
+          // Primary method: Use vaultAllocations mapping (vault's own tracking)
+          const allocationMapping = await vaultContract.vaultAllocations(
+            pool.pool_address
+          );
+
+          // If vaultAllocations has a value, use it
+          if (!allocationMapping.isZero()) {
+            return {
+              pool: pool.pool_address,
+              amount: ethers.utils.formatUnits(allocationMapping, 6),
+              balanceBN: allocationMapping,
+              description: pool.description,
+            };
+          }
+
+          // Fallback: Try to get actual balance from pool contract (for verification)
           let vaultBalanceInPool = ethers.BigNumber.from(0);
 
           try {
@@ -323,34 +344,15 @@ export default function VaultPage() {
               }
             }
           } catch (err) {
-            // Pool doesn't support vault interface, try ERC20 balance
-            // Some pools might hold tokens directly
-            try {
-              const directBalance = await tokenContract.balanceOf(
-                pool.pool_address
-              );
-              // This is the pool's total balance, not vault's share
-              // We can't determine vault's share without pool interface
-              vaultBalanceInPool = ethers.BigNumber.from(0);
-            } catch {
-              vaultBalanceInPool = ethers.BigNumber.from(0);
-            }
+            // Pool doesn't support vault interface - that's okay, we'll use vaultAllocations
+            vaultBalanceInPool = ethers.BigNumber.from(0);
           }
 
-          // Also check vaultAllocations mapping as fallback/reference
-          const allocationMapping = await vaultContract.vaultAllocations(
-            pool.pool_address
-          );
-
-          // Use the actual balance from pool if available, otherwise use allocation mapping
-          const finalBalance = !vaultBalanceInPool.isZero()
-            ? vaultBalanceInPool
-            : allocationMapping;
-
+          // Use pool balance if available, otherwise zero (vaultAllocations was already zero)
           return {
             pool: pool.pool_address,
-            amount: ethers.utils.formatUnits(finalBalance, 6),
-            balanceBN: finalBalance,
+            amount: ethers.utils.formatUnits(vaultBalanceInPool, 6),
+            balanceBN: vaultBalanceInPool,
             description: pool.description,
           };
         } catch (err: any) {
@@ -923,6 +925,35 @@ export default function VaultPage() {
                     })()}
                   </div>
                 )}
+              </div>
+
+              {/* Vault Charts Container with Toggle */}
+              <div className="vault-section-card">
+                <div className="charts-header">
+                  <h3>Vault Performance</h3>
+                  <div className="chart-selector">
+                    <button
+                      className={`chart-button ${
+                        selectedVaultChart === "apy" ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedVaultChart("apy")}
+                    >
+                      Vault APY
+                    </button>
+                    <button
+                      className={`chart-button ${
+                        selectedVaultChart === "tvl" ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedVaultChart("tvl")}
+                    >
+                      Vault TVL
+                    </button>
+                  </div>
+                </div>
+                <div className="chart-container">
+                  {selectedVaultChart === "apy" && <VaultApyChart />}
+                  {selectedVaultChart === "tvl" && <VaultTvlChart />}
+                </div>
               </div>
 
               {/* Charts Container with Toggle */}

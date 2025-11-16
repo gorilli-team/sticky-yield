@@ -1,10 +1,12 @@
 import cron, { ScheduledTask } from "node-cron";
 import { trackAllPoolsApy } from "./apyTracker";
 import { runVaultAutomation } from "./vaultAutomation";
+import { trackVaultTvl } from "./vaultTracker";
 import { getDatabaseStatus } from "./database";
 
 let apyTrackingJob: ScheduledTask | null = null;
 let automationJob: ScheduledTask | null = null;
+let vaultTvlJob: ScheduledTask | null = null;
 
 /**
  * Start all cron jobs
@@ -29,6 +31,23 @@ export function startCronJobs(): void {
 
   console.log("✅ APY tracking cron job started (runs every 5 minutes)");
 
+  // Vault TVL tracking - every 5 minutes
+  vaultTvlJob = cron.schedule("*/5 * * * *", async () => {
+    // Check database connection
+    if (!getDatabaseStatus()) {
+      console.error("⚠️  Skipping vault TVL tracking - database not connected");
+      return;
+    }
+
+    try {
+      await trackVaultTvl();
+    } catch (error) {
+      console.error("❌ Error in vault TVL tracking cron job:", error);
+    }
+  });
+
+  console.log("✅ Vault TVL tracking cron job started (runs every 5 minutes)");
+
   // Vault automation - every hour
   automationJob = cron.schedule("0 * * * *", async () => {
     // Check database connection
@@ -51,6 +70,8 @@ export function startCronJobs(): void {
     if (getDatabaseStatus()) {
       console.log("🚀 Running initial APY tracking...");
       await trackAllPoolsApy();
+      console.log("🚀 Running initial vault TVL tracking...");
+      await trackVaultTvl();
     }
   }, 5000); // Wait 5 seconds for everything to initialize
 }
@@ -70,6 +91,11 @@ export function stopCronJobs(): void {
     automationJob.stop();
     console.log("✅ Vault automation cron job stopped");
   }
+
+  if (vaultTvlJob) {
+    vaultTvlJob.stop();
+    console.log("✅ Vault TVL tracking cron job stopped");
+  }
 }
 
 /**
@@ -81,6 +107,11 @@ export function getCronJobsStatus() {
       active: apyTrackingJob ? true : false,
       schedule: "*/5 * * * *",
       description: "Tracks APY for all pools",
+    },
+    vaultTvlTracking: {
+      active: vaultTvlJob ? true : false,
+      schedule: "*/5 * * * *",
+      description: "Tracks vault TVL and token distribution",
     },
     vaultAutomation: {
       active: automationJob ? true : false,

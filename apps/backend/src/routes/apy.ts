@@ -6,6 +6,7 @@ import {
   getMarketAverageHistory,
   getLatestMarketAverage,
 } from "../services/apyTracker";
+import { getVaultTvlHistory, getLatestVaultTvl } from "../services/vaultTracker";
 import { getCronJobsStatus } from "../services/cronJobs";
 
 const router: Router = Router();
@@ -354,6 +355,80 @@ router.get("/cron/status", (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: error.message || "Failed to get cron job status",
+    });
+  }
+});
+
+/**
+ * GET /api/apy/vault-tvl/history
+ * Get vault TVL history
+ * Query params: vault (required - vault address), hours (default: 168 = 7 days)
+ */
+router.get("/vault-tvl/history", async (req: Request, res: Response) => {
+  try {
+    const vaultAddress = req.query.vault as string | undefined;
+    const hours = parseInt(req.query.hours as string) || 168;
+
+    if (!vaultAddress) {
+      return res.status(400).json({
+        success: false,
+        error: "Vault address is required",
+      });
+    }
+
+    const history = await getVaultTvlHistory(vaultAddress, hours);
+
+    res.json({
+      success: true,
+      vault_address: vaultAddress.toLowerCase(),
+      hours,
+      count: history.length,
+      data: history,
+    });
+  } catch (error: any) {
+    console.error("Error fetching vault TVL history:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch vault TVL history",
+    });
+  }
+});
+
+/**
+ * GET /api/apy/vault-tvl/latest
+ * Get latest vault TVL
+ * Query params: vault (required - vault address)
+ */
+router.get("/vault-tvl/latest", async (req: Request, res: Response) => {
+  try {
+    const vaultAddress = req.query.vault as string | undefined;
+
+    if (!vaultAddress) {
+      return res.status(400).json({
+        success: false,
+        error: "Vault address is required",
+      });
+    }
+
+    const latest = await getLatestVaultTvl(vaultAddress);
+
+    if (!latest) {
+      return res.json({
+        success: true,
+        vault_tvl: null,
+        message: "No vault TVL data available",
+      });
+    }
+
+    res.json({
+      success: true,
+      vault_tvl: latest,
+    });
+  } catch (error: any) {
+    console.error("Error fetching latest vault TVL:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch latest vault TVL",
     });
   }
 });
