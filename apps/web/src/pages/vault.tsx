@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { ethers } from "ethers";
 import Layout from "@/components/Layout";
@@ -111,51 +112,57 @@ export default function VaultPage() {
   // Load best APY pool - use real-time data from GlueX API (includes TVL)
   const loadBestPool = async () => {
     try {
-      // First try to get real-time data from GlueX API (includes TVL)
+      // First try to get real-time data from GlueX API (includes TVL and opportunity score)
       try {
         const realTimeData = await getBestYield();
 
         if (realTimeData.pools) {
-          // Filter pools for the asset token and find the one with highest APY
+          // Filter pools for the asset token
           const tokenPools = realTimeData.pools.filter(
             (pool: any) =>
               pool.input_token?.toLowerCase() === ASSET_TOKEN.toLowerCase()
           );
 
           if (tokenPools.length > 0) {
-            // Sort by apy descending and get the first one
-            const best = tokenPools.sort(
-              (a: any, b: any) => (b.apy || 0) - (a.apy || 0)
-            )[0];
+            // Sort by opportunity_score descending (prefer opportunity score over APY)
+            // If opportunity_score is null, fall back to APY
+            const best = tokenPools.sort((a: any, b: any) => {
+              const aScore = a.opportunity_score ?? a.apy ?? 0;
+              const bScore = b.opportunity_score ?? b.apy ?? 0;
+              return bScore - aScore;
+            })[0];
             // Map to expected format (apy -> total_apy for consistency, includes TVL)
             setBestPool({
               ...best,
-              total_apy: best.apy,
+              total_apy: best.apy || best.total_apy,
             });
             return;
           }
         }
       } catch (realTimeError) {
         console.warn(
-          "Failed to fetch real-time APY, trying database fallback:",
+          "Failed to fetch real-time data, trying database fallback:",
           realTimeError
         );
       }
 
-      // Fallback to database data if real-time fetch fails (no TVL in database)
+      // Fallback to database data if real-time fetch fails
       const response = await getLatestApy();
       if (response.success && response.pools) {
-        // Filter pools for the asset token and find the one with highest APY
+        // Filter pools for the asset token
         const tokenPools = response.pools.filter(
           (pool: any) =>
             pool.input_token?.toLowerCase() === ASSET_TOKEN.toLowerCase()
         );
 
         if (tokenPools.length > 0) {
-          // Sort by total_apy descending and get the first one
-          const best = tokenPools.sort(
-            (a: any, b: any) => (b.total_apy || 0) - (a.total_apy || 0)
-          )[0];
+          // Sort by opportunity_score descending (prefer opportunity score over APY)
+          // If opportunity_score is null, fall back to total_apy
+          const best = tokenPools.sort((a: any, b: any) => {
+            const aScore = a.opportunity_score ?? a.total_apy ?? 0;
+            const bScore = b.opportunity_score ?? b.total_apy ?? 0;
+            return bScore - aScore;
+          })[0];
           setBestPool(best);
         }
       }
@@ -604,17 +611,21 @@ export default function VaultPage() {
         amountToReallocate
       );
 
+      const poolInfo =
+        bestPool.opportunity_score !== null &&
+        bestPool.opportunity_score !== undefined
+          ? `Score: ${bestPool.opportunity_score.toFixed(2)} (${
+              bestPool.total_apy?.toFixed(2) || "0"
+            }% APY)`
+          : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`;
+
       setSuccess(
-        `Reallocation transaction sent! Moving funds to ${
-          bestPool.description
-        } (${bestPool.total_apy.toFixed(2)}% APY)...`
+        `Reallocation transaction sent! Moving funds to ${bestPool.description} (${poolInfo})...`
       );
       await tx.wait();
 
       setSuccess(
-        `✅ Successfully reallocated to ${
-          bestPool.description
-        } (${bestPool.total_apy.toFixed(2)}% APY)!`
+        `✅ Successfully reallocated to ${bestPool.description} (${poolInfo})!`
       );
       await loadBalances();
       await loadAllocations();
@@ -716,10 +727,13 @@ export default function VaultPage() {
                     </div>
                   </div>
                   <div className="stat-item">
-                    <div className="stat-label">Best APY</div>
+                    <div className="stat-label">Best Opportunity Score</div>
                     <div className="stat-value">
                       {bestPool
-                        ? `${bestPool.total_apy?.toFixed(2) || "0"}%`
+                        ? bestPool.opportunity_score !== null &&
+                          bestPool.opportunity_score !== undefined
+                          ? bestPool.opportunity_score.toFixed(2)
+                          : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`
                         : "Loading..."}
                     </div>
                   </div>
@@ -783,7 +797,24 @@ export default function VaultPage() {
                           <div key={index} className="allocation-row">
                             <div className="allocation-info">
                               <div className="allocation-name">
-                                {alloc.description}
+                                <Link
+                                  href={`/pool/${alloc.pool}`}
+                                  className="allocation-link"
+                                  style={{
+                                    color: "var(--primary)",
+                                    textDecoration: "none",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.textDecoration =
+                                      "underline";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.textDecoration =
+                                      "none";
+                                  }}
+                                >
+                                  {alloc.description}
+                                </Link>
                               </div>
                               <div className="allocation-address">
                                 {formatAddress(alloc.pool)}
@@ -798,6 +829,11 @@ export default function VaultPage() {
                 )}
               </div>
 
+              {/* Opportunity Score Chart */}
+              <div className="vault-section-card">
+                <OpportunityScoreChart />
+              </div>
+
               {/* APY Chart */}
               <div className="vault-section-card">
                 <ApyChart />
@@ -806,11 +842,6 @@ export default function VaultPage() {
               {/* TVL Chart */}
               <div className="vault-section-card">
                 <TvlChart />
-              </div>
-
-              {/* Opportunity Score Chart */}
-              <div className="vault-section-card">
-                <OpportunityScoreChart />
               </div>
 
               {/* Opportunity Score Explanation */}
@@ -1034,10 +1065,26 @@ export default function VaultPage() {
                   <div className="best-pool-header">
                     <h4>Current Best Pool</h4>
                     <span className="best-apy">
-                      {bestPool.total_apy?.toFixed(2) || "0"}% APY
+                      {bestPool.opportunity_score !== null &&
+                      bestPool.opportunity_score !== undefined
+                        ? `Score: ${bestPool.opportunity_score.toFixed(2)}`
+                        : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`}
                     </span>
                   </div>
                   <p className="best-pool-name">{bestPool.description}</p>
+                  {bestPool.opportunity_score !== null &&
+                    bestPool.opportunity_score !== undefined && (
+                      <div
+                        className="pool-apy-info"
+                        style={{
+                          marginTop: "0.5rem",
+                          fontSize: "0.9rem",
+                          opacity: 0.8,
+                        }}
+                      >
+                        APY: {bestPool.total_apy?.toFixed(2) || "0"}%
+                      </div>
+                    )}
                   {bestPool.tvl_usd && (
                     <div className="pool-tvl">
                       <span className="tvl-label">TVL:</span>

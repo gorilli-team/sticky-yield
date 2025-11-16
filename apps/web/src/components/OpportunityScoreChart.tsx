@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   LineChart,
   Line,
@@ -273,7 +274,25 @@ const OpportunityScoreChart: React.FC = () => {
                       className="apy-legend-color"
                       style={{ backgroundColor: colors[index % colors.length] }}
                     ></div>
-                    <span className="apy-legend-label">{pool.description}</span>
+                    <Link
+                      href={`/pool/${pool.pool_address}`}
+                      className="apy-legend-label"
+                      style={{
+                        color: "var(--text-primary)",
+                        textDecoration: "none",
+                        cursor: "pointer",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = "var(--primary)";
+                        e.currentTarget.style.textDecoration = "underline";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = "var(--text-primary)";
+                        e.currentTarget.style.textDecoration = "none";
+                      }}
+                    >
+                      {pool.description}
+                    </Link>
                     {latestScore !== null && latestScore !== undefined && (
                       <span className="apy-legend-value">
                         {latestScore.toFixed(2)}
