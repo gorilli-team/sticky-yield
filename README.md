@@ -1,5 +1,11 @@
 # Sticky Yield
 
+> **Full Repository History**  
+> This is a hackathon submission. For the complete development history, commits, and full repository, please visit:  
+> **[https://github.com/gorilli-team/sticky-yield](https://github.com/gorilli-team/sticky-yield)**
+
+---
+
 A yield optimization platform that automatically reallocates user deposits across the highest-yielding pools on HyperEVM, maximizing returns while considering stability and pool capacity.
 
 ## Purpose
