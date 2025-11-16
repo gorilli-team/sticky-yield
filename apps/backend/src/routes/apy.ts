@@ -8,6 +8,9 @@ import { getCronJobsStatus } from "../services/cronJobs";
 
 const router: Router = Router();
 
+// Debug: Log all route registrations
+console.log("📋 Registering APY routes...");
+
 /**
  * GET /api/apy/latest
  * Get latest APY for all tracked pools
@@ -91,6 +94,76 @@ router.get("/stats/:poolAddress", async (req: Request, res: Response) => {
     });
   }
 });
+
+/**
+ * GET /api/apy/opportunity-score/token/:tokenAddress
+ * Get opportunity score history for all pools for a specific token
+ * Query params: hours (default: 24)
+ * NOTE: This route must come BEFORE /token/:tokenAddress to avoid route conflicts
+ */
+console.log(
+  "  ✓ Registering route: GET /api/apy/opportunity-score/token/:tokenAddress"
+);
+router.get(
+  "/opportunity-score/token/:tokenAddress",
+  async (req: Request, res: Response) => {
+    console.log(
+      `📊 Opportunity score route hit: /api/apy/opportunity-score/token/${req.params.tokenAddress}`
+    );
+    try {
+      const { tokenAddress } = req.params;
+      const hours = parseInt(req.query.hours as string) || 24;
+
+      // Get latest APY to find all pools for this token
+      const latestApy = await getLatestApy();
+      const tokenPools = latestApy.filter(
+        (pool) => pool.input_token?.toLowerCase() === tokenAddress.toLowerCase()
+      );
+
+      if (tokenPools.length === 0) {
+        return res.json({
+          success: true,
+          token_address: tokenAddress,
+          hours,
+          pools: [],
+          message: "No pools found for this token",
+        });
+      }
+
+      // Get opportunity score history for each pool
+      const poolsWithHistory = await Promise.all(
+        tokenPools.map(async (pool) => {
+          const history = await getPoolApyHistory(pool.pool_address, hours);
+          // Extract only opportunity score data from history
+          const scoreHistory = history.map((h: any) => ({
+            timestamp: h.timestamp,
+            opportunity_score: h.opportunity_score || null,
+            opportunity_score_details: h.opportunity_score_details || null,
+          }));
+          return {
+            ...pool,
+            history: scoreHistory,
+          };
+        })
+      );
+
+      res.json({
+        success: true,
+        token_address: tokenAddress,
+        hours,
+        count: poolsWithHistory.length,
+        pools: poolsWithHistory,
+      });
+    } catch (error: any) {
+      console.error("Error fetching token opportunity score history:", error);
+      res.status(500).json({
+        success: false,
+        error:
+          error.message || "Failed to fetch token opportunity score history",
+      });
+    }
+  }
+);
 
 /**
  * GET /api/apy/tvl/token/:tokenAddress
