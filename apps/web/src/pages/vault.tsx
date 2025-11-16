@@ -52,6 +52,11 @@ export default function VaultPage() {
     bestPool: false,
   });
 
+  // Chart selection state
+  const [selectedChart, setSelectedChart] = useState<
+    "opportunity" | "apy" | "tvl"
+  >("opportunity");
+
   const toggleCard = (cardName: keyof typeof expandedCards) => {
     setExpandedCards((prev) => ({
       ...prev,
@@ -920,19 +925,42 @@ export default function VaultPage() {
                 )}
               </div>
 
-              {/* Opportunity Score Chart */}
+              {/* Charts Container with Toggle */}
               <div className="vault-section-card">
-                <OpportunityScoreChart />
-              </div>
-
-              {/* APY Chart */}
-              <div className="vault-section-card">
-                <ApyChart />
-              </div>
-
-              {/* TVL Chart */}
-              <div className="vault-section-card">
-                <TvlChart />
+                <div className="charts-header">
+                  <h3>Analytics</h3>
+                  <div className="chart-selector">
+                    <button
+                      className={`chart-button ${
+                        selectedChart === "opportunity" ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedChart("opportunity")}
+                    >
+                      Opportunity Score
+                    </button>
+                    <button
+                      className={`chart-button ${
+                        selectedChart === "apy" ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedChart("apy")}
+                    >
+                      APY
+                    </button>
+                    <button
+                      className={`chart-button ${
+                        selectedChart === "tvl" ? "active" : ""
+                      }`}
+                      onClick={() => setSelectedChart("tvl")}
+                    >
+                      TVL
+                    </button>
+                  </div>
+                </div>
+                <div className="chart-container">
+                  {selectedChart === "opportunity" && <OpportunityScoreChart />}
+                  {selectedChart === "apy" && <ApyChart />}
+                  {selectedChart === "tvl" && <TvlChart />}
+                </div>
               </div>
 
               {/* Transaction History */}
