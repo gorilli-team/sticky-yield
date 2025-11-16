@@ -502,7 +502,7 @@ h1 {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .action-card h2 {
@@ -781,18 +781,7 @@ h1 {
   margin-left: 0.25rem;
 }
 
-/* Best Pool Card Styles */
-.best-pool-card {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-}
-
-.best-pool-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
+/* Best Pool Card Styles - Legacy (overridden by later definition) */
 
 .best-pool-badge {
   background: rgba(139, 92, 246, 0.2);
@@ -1347,7 +1336,7 @@ h1 {
 .vault-right {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.75rem;
   position: sticky;
   top: 2rem;
   height: fit-content;
@@ -1357,12 +1346,13 @@ h1 {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.25rem;
+  padding-top: 0.75rem;
 }
 
 .user-balances-card h3 {
   font-size: 1.1rem;
-  margin: 0 0 1rem;
+  margin: 0 0 0.75rem;
   color: var(--text-primary);
 }
 
@@ -1431,7 +1421,7 @@ h1 {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 /* Input Groups */
@@ -1568,8 +1558,10 @@ h1 {
 .best-pool-card {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0;
+  margin-bottom: 0rem;
 }
 
 .best-pool-header {
@@ -1589,7 +1581,15 @@ h1 {
   opacity: 0.9;
 }
 
-.best-pool-header > div {
+.best-pool-header-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.best-pool-header-content > div:first-child {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -1598,25 +1598,49 @@ h1 {
 
 .best-pool-header h4 {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   opacity: 0.9;
 }
 
 .best-apy {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.2;
 }
 
+.alpha-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #4ade80;
+  flex-shrink: 0;
+}
+
+.alpha-indicator svg {
+  width: 12px;
+  height: 12px;
+  color: #4ade80;
+}
+
+.alpha-value {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
 .best-pool-details {
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .best-pool-name {
-  font-size: 1rem;
-  margin: 0.5rem 0;
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
   opacity: 0.95;
 }
 
@@ -1967,15 +1991,15 @@ h1 {
 .market-average-cards {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .market-average-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 1.25rem;
+  border-radius: 8px;
+  padding: 0.75rem;
 }
 
 .market-average-header {
@@ -2003,7 +2027,7 @@ h1 {
 }
 
 .market-average-header h4 {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -2011,7 +2035,7 @@ h1 {
 }
 
 .market-average-value {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--primary);
   line-height: 1.2;
@@ -2032,9 +2056,9 @@ h1 {
 .market-average-details {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -2056,19 +2080,19 @@ h1 {
 
 @media (max-width: 768px) {
   .market-average-cards {
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
   .market-average-card {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .market-average-header h4 {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
   }
 
   .market-average-value {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 }
 

@@ -59,6 +59,25 @@ export default function VaultPage() {
     }));
   };
 
+  // Calculate alpha (outperformance vs market averages)
+  const calculateAlpha = () => {
+    if (!bestPool || !marketAverageToken || !marketAverageAll) return null;
+
+    const bestPoolApy = bestPool.total_apy || 0;
+    const tokenAvgApy = marketAverageToken.market_avg_apy || 0;
+    const allAvgApy = marketAverageAll.market_avg_apy || 0;
+
+    // Alpha if best pool beats both averages
+    if (bestPoolApy > tokenAvgApy && bestPoolApy > allAvgApy) {
+      const alpha = bestPoolApy - Math.max(tokenAvgApy, allAvgApy);
+      return alpha;
+    }
+
+    return null;
+  };
+
+  const alpha = calculateAlpha();
+
   // Fund allocations
   const [allocations, setAllocations] = useState<
     Array<{
@@ -1122,7 +1141,7 @@ export default function VaultPage() {
                       onClick={() => toggleCard("marketAverageToken")}
                     >
                       <div>
-                        <h4>Market Average (USD₮0)</h4>
+                        <h4>Market Avg (USD₮0)</h4>
                         <span className="market-average-value">
                           {marketAverageToken.market_avg_apy?.toFixed(2) || "0"}
                           %
@@ -1164,7 +1183,7 @@ export default function VaultPage() {
                       onClick={() => toggleCard("marketAverageAll")}
                     >
                       <div>
-                        <h4>Market Average (All Tokens)</h4>
+                        <h4>Market Avg (All)</h4>
                         <span className="market-average-value">
                           {marketAverageAll.market_avg_apy?.toFixed(2) || "0"}%
                         </span>
@@ -1214,14 +1233,38 @@ export default function VaultPage() {
                     className="best-pool-header clickable"
                     onClick={() => toggleCard("bestPool")}
                   >
-                    <div>
-                      <h4>Current Best Pool</h4>
-                      <span className="best-apy">
-                        {bestPool.opportunity_score !== null &&
-                        bestPool.opportunity_score !== undefined
-                          ? `Score: ${bestPool.opportunity_score.toFixed(2)}`
-                          : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`}
-                      </span>
+                    <div className="best-pool-header-content">
+                      <div>
+                        <h4>Best Pool</h4>
+                        <span className="best-apy">
+                          {bestPool.opportunity_score !== null &&
+                          bestPool.opportunity_score !== undefined
+                            ? `Score: ${bestPool.opportunity_score.toFixed(2)}`
+                            : `${bestPool.total_apy?.toFixed(2) || "0"}% APY`}
+                        </span>
+                      </div>
+                      {alpha !== null && (
+                        <div
+                          className="alpha-indicator"
+                          title={`Alpha: +${alpha.toFixed(2)}%`}
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M8 2L10.5 6H13L9.5 10L11 14L8 12L5 14L6.5 10L3 6H5.5L8 2Z"
+                              fill="currentColor"
+                            />
+                          </svg>
+                          <span className="alpha-value">
+                            +{alpha.toFixed(2)}%
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <span className="expand-icon">
                       {expandedCards.bestPool ? "▼" : "▶"}
@@ -1265,30 +1308,6 @@ export default function VaultPage() {
                   )}
                 </div>
               )}
-              {/* User Balances */}
-              <div className="user-balances-card">
-                <h3>Your Balances</h3>
-                <div className="balance-grid">
-                  <div className="balance-item">
-                    <span className="balance-label">Wallet Balance</span>
-                    <span className="balance-value">
-                      {formatNumber(tokenBalance, 4)} USD₮0
-                    </span>
-                  </div>
-                  <div className="balance-item">
-                    <span className="balance-label">Deposited</span>
-                    <span className="balance-value">
-                      {formatNumber(vaultBalance, 4)} USD₮0
-                    </span>
-                  </div>
-                  <div className="balance-item">
-                    <span className="balance-label">Shares</span>
-                    <span className="balance-value">
-                      {formatNumber(userShares, 4)}
-                    </span>
-                  </div>
-                </div>
-              </div>
 
               {/* Status Messages */}
               {error && <div className="error-message">{error}</div>}
@@ -1411,6 +1430,31 @@ export default function VaultPage() {
                   </div>
                 </div>
               )}
+
+              {/* User Balances */}
+              <div className="user-balances-card">
+                <h3>Your Balances</h3>
+                <div className="balance-grid">
+                  <div className="balance-item">
+                    <span className="balance-label">Wallet Balance</span>
+                    <span className="balance-value">
+                      {formatNumber(tokenBalance, 4)} USD₮0
+                    </span>
+                  </div>
+                  <div className="balance-item">
+                    <span className="balance-label">Deposited</span>
+                    <span className="balance-value">
+                      {formatNumber(vaultBalance, 4)} USD₮0
+                    </span>
+                  </div>
+                  <div className="balance-item">
+                    <span className="balance-label">Shares</span>
+                    <span className="balance-value">
+                      {formatNumber(userShares, 4)}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
