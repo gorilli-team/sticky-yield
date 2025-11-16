@@ -11,7 +11,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "reallocate": "ts-node src/scripts/reallocateVault.ts",
-    "reallocate:dry-run": "ts-node src/scripts/reallocateVault.ts --dry-run"
+    "reallocate:dry-run": "ts-node src/scripts/reallocateVault.ts --dry-run",
+    "automation:run": "ts-node src/scripts/runAutomation.ts"
   },
   "dependencies": {
     "@types/node-cron": "^3.0.11",

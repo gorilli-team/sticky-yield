@@ -7,6 +7,7 @@ import yields from "./routes/yields";
 import optimize from "./routes/optimize";
 import testGluex from "./routes/test-gluex";
 import apyRoutes from "./routes/apy";
+import automationRoutes from "./routes/automation";
 import { connectDatabase, getDatabaseStatus } from "./services/database";
 import { startCronJobs, stopCronJobs } from "./services/cronJobs";
 
@@ -22,6 +23,7 @@ app.use("/yields", yields);
 app.use("/optimize", optimize);
 app.use("/test-gluex", testGluex);
 app.use("/api/apy", apyRoutes);
+app.use("/api/automation", automationRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
