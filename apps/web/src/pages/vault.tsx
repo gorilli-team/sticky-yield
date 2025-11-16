@@ -1136,20 +1136,30 @@ export default function VaultPage() {
                 {/* Token-specific Market Average */}
                 {marketAverageToken && (
                   <div className="market-average-card">
-                    <div
-                      className="market-average-header clickable"
-                      onClick={() => toggleCard("marketAverageToken")}
-                    >
-                      <div>
-                        <h4>Market Avg (USD₮0)</h4>
-                        <span className="market-average-value">
-                          {marketAverageToken.market_avg_apy?.toFixed(2) || "0"}
-                          %
+                    <div className="market-average-header">
+                      <div
+                        className="market-average-header-content clickable"
+                        onClick={() => toggleCard("marketAverageToken")}
+                      >
+                        <div>
+                          <h4>Market Avg (USD₮0)</h4>
+                          <span className="market-average-value">
+                            {marketAverageToken.market_avg_apy?.toFixed(2) ||
+                              "0"}
+                            %
+                          </span>
+                        </div>
+                        <span className="expand-icon">
+                          {expandedCards.marketAverageToken ? "▼" : "▶"}
                         </span>
                       </div>
-                      <span className="expand-icon">
-                        {expandedCards.marketAverageToken ? "▼" : "▶"}
-                      </span>
+                      <Link
+                        href={`/market-average/${ASSET_TOKEN}`}
+                        className="market-average-link"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View Details →
+                      </Link>
                     </div>
                     {expandedCards.marketAverageToken && (
                       <div className="market-average-details">
@@ -1170,6 +1180,12 @@ export default function VaultPage() {
                             {marketAverageToken.pool_count || 0}
                           </span>
                         </div>
+                        <Link
+                          href={`/market-average/${ASSET_TOKEN}`}
+                          className="market-average-link-full"
+                        >
+                          View Full History →
+                        </Link>
                       </div>
                     )}
                   </div>
@@ -1178,19 +1194,29 @@ export default function VaultPage() {
                 {/* Overall Market Average */}
                 {marketAverageAll && (
                   <div className="market-average-card">
-                    <div
-                      className="market-average-header clickable"
-                      onClick={() => toggleCard("marketAverageAll")}
-                    >
-                      <div>
-                        <h4>Market Avg (All)</h4>
-                        <span className="market-average-value">
-                          {marketAverageAll.market_avg_apy?.toFixed(2) || "0"}%
+                    <div className="market-average-header">
+                      <div
+                        className="market-average-header-content clickable"
+                        onClick={() => toggleCard("marketAverageAll")}
+                      >
+                        <div>
+                          <h4>Market Avg (All)</h4>
+                          <span className="market-average-value">
+                            {marketAverageAll.market_avg_apy?.toFixed(2) || "0"}
+                            %
+                          </span>
+                        </div>
+                        <span className="expand-icon">
+                          {expandedCards.marketAverageAll ? "▼" : "▶"}
                         </span>
                       </div>
-                      <span className="expand-icon">
-                        {expandedCards.marketAverageAll ? "▼" : "▶"}
-                      </span>
+                      <Link
+                        href="/market-average"
+                        className="market-average-link"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View Details →
+                      </Link>
                     </div>
                     {expandedCards.marketAverageAll && (
                       <div className="market-average-details">
@@ -1210,6 +1236,12 @@ export default function VaultPage() {
                             {marketAverageAll.pool_count || 0}
                           </span>
                         </div>
+                        <Link
+                          href="/market-average"
+                          className="market-average-link-full"
+                        >
+                          View Full History →
+                        </Link>
                       </div>
                     )}
                   </div>
