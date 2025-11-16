@@ -800,13 +800,13 @@ export default function VaultPage() {
                   </div>
                   <div className="stat-item">
                     <div className="stat-label">
-                      Best Opportunity Score{" "}
+                      Best Opportunity Score
                       <Link
                         href="/opportunity-score"
                         className="info-link"
                         title="Learn about Opportunity Score"
                       >
-                        ℹ️
+                        (learn)
                       </Link>
                     </div>
                     <div className="stat-value">
@@ -1156,15 +1156,8 @@ export default function VaultPage() {
                           {bestPool.opportunity_score !== null &&
                           bestPool.opportunity_score !== undefined ? (
                             <>
-                              <Link
-                                href="/opportunity-score"
-                                className="opportunity-score-link"
-                                title="Learn about Opportunity Score"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Score: {bestPool.opportunity_score.toFixed(2)}
-                              </Link>{" "}
-                              ({bestPool.total_apy?.toFixed(2) || "0"}% APY)
+                              Score: {bestPool.opportunity_score.toFixed(2)} (
+                              {bestPool.total_apy?.toFixed(2) || "0"}% APY)
                             </>
                           ) : (
                             `${bestPool.total_apy?.toFixed(2) || "0"}% APY`

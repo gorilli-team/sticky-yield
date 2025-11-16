@@ -1090,7 +1090,8 @@ h1 {
 
 .stats-grid .stat-item {
   flex: 1;
-  min-width: 150px;
+  min-width: 200px;
+  max-width: 300px;
 }
 
 .stat-label {
