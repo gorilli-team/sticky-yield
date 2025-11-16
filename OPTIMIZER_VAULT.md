@@ -4,6 +4,16 @@
 
 The `OptimizerVault` is a yield optimization smart contract that aggregates user deposits and automatically allocates them to the highest-yielding pools on HyperEVM. It implements a share-based accounting system where users receive shares proportional to their deposits and can withdraw their proportional share of total assets (including earned yield) at any time.
 
+## Deployed Contract
+
+**Contract Address**: `0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD`
+
+**Block Explorer**: [View on Hyperscan](https://www.hyperscan.com/address/0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD)
+
+**Network**: HyperEVM (Chain ID: 999)
+
+**Asset Token**: `0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb` (USD₮0) - [View on Hyperscan](https://www.hyperscan.com/address/0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb)
+
 ## Core Concepts
 
 ### 1. Share-Based Accounting
@@ -298,7 +308,8 @@ cast send $VAULT \
 ### Verification Commands
 
 ```bash
-VAULT=0xYourVaultAddress
+# Example: Using the deployed contract address
+VAULT=0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD
 
 # Check owner
 cast call $VAULT "owner()" --rpc-url hyperevm
