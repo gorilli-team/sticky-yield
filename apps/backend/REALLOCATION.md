@@ -83,30 +83,30 @@ The script follows this decision tree:
 ## Example Output
 
 ```bash
-🚀 Starting vault reallocation process...
+ Starting vault reallocation process...
    Vault: 0x7F0d2c1a50FE32Bc17781c96DddC35621B0339AD
    Asset: 0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb
    Mode: LIVE
 
-📋 Vault Configuration:
+ Vault Configuration:
    Owner: 0x1234...5678
    Asset: 0xb8ce...5ebb
    Whitelist Mode: DISABLED
    Wallet: 0x1234...5678
 
-🧮 Calculating reallocation plan...
+ Calculating reallocation plan...
 
-🎯 Best pool: USD₮0 Hypurr
+ Best pool: USD₮0 Hypurr
    Address: 0x1Ca7e21B2dAa5Ab2eB9de7cf8f34dCf9c8683007
    APY: 7.20%
 
-📊 Current allocation: 0x543d...3a0
+ Current allocation: 0x543d...3a0
    Amount: 1000.0
    Current APY: 5.50%
    Best APY: 7.20%
    Difference: 1.70%
 
-📊 Reallocation Plan:
+ Reallocation Plan:
    Current Pool: 0x543d...3a0
    Current APY: 5.50%
    Target Pool: 0x1Ca7...3007
@@ -115,23 +115,23 @@ The script follows this decision tree:
    Should Reallocate: YES
    Reason: APY improvement: 1.70%
 
-🔄 Executing reallocation...
+ Executing reallocation...
    Reason: APY improvement: 1.70%
    Target pool: 0x1Ca7...3007
    Amount: 1000.0
 
-📤 Withdrawing from current pool...
+ Withdrawing from current pool...
    Tx hash: 0xabc...def
    ✅ Withdrawal confirmed
 
-📥 Allocating to target pool...
+ Allocating to target pool...
    Tx hash: 0x123...456
    ✅ Allocation confirmed
 
-✅ Reallocation completed successfully!
+ Reallocation completed successfully!
    New APY: 7.20%
 
-✅ Done!
+ Done!
 ```
 
 ## Automation
