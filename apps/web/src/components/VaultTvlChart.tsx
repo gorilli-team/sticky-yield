@@ -92,15 +92,7 @@ const VaultTvlChart: React.FC = () => {
           })
           .map((point: any) => {
             const timestamp = new Date(point.timestamp);
-            const dataPoint: VaultTvlDataPoint = {
-              timestamp: timestamp.toLocaleString("en-US", {
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-            };
-
+            
             // Calculate total TVL from allocations array
             let calculatedTvl = point.idle_balance || 0;
             if (point.allocations && Array.isArray(point.allocations)) {
@@ -109,7 +101,16 @@ const VaultTvlChart: React.FC = () => {
                 0
               );
             }
-            dataPoint.tvl = calculatedTvl;
+            
+            const dataPoint: VaultTvlDataPoint = {
+              timestamp: timestamp.toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              tvl: calculatedTvl,
+            };
 
             // Add idle balance if present
             if (point.idle_balance && point.idle_balance > 0) {
