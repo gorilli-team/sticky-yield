@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/Layout";
+import Pagination from "@/components/Pagination";
 import { getMarketAverageHistory } from "@/lib/api";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function TokenMarketAveragePage() {
   const router = useRouter();
@@ -12,31 +15,36 @@ export default function TokenMarketAveragePage() {
   const [error, setError] = useState("");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [hours, setHours] = useState(168); // Default 7 days
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   const tokenAddress = token as string | undefined;
 
-  const loadHistory = async () => {
+  const loadHistory = async (page: number = 1) => {
     if (!tokenAddress) return;
     
     setLoading(true);
     setError("");
     try {
-      const response = await getMarketAverageHistory(tokenAddress, hours);
+      const response = await getMarketAverageHistory(tokenAddress, hours, page, ITEMS_PER_PAGE);
       if (response.success && response.history) {
-        // Sort by timestamp descending (newest first)
-        const sortedHistory = [...response.history].sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        setHistory(sortedHistory);
+        setHistory(response.history);
+        setTotalPages(response.totalPages || 1);
+        setTotalCount(response.totalCount || 0);
+        setCurrentPage(response.page || 1);
       } else {
         setError("No market average data available");
         setHistory([]);
+        setTotalPages(1);
+        setTotalCount(0);
       }
     } catch (err: any) {
       console.error("Error loading market average history:", err);
       setError(err.message || "Failed to load market average history");
       setHistory([]);
+      setTotalPages(1);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -44,9 +52,17 @@ export default function TokenMarketAveragePage() {
 
   useEffect(() => {
     if (tokenAddress) {
-      loadHistory();
+      setCurrentPage(1); // Reset to first page when filters change
+      loadHistory(1);
     }
   }, [tokenAddress, hours]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    loadHistory(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const toggleRow = (timestamp: string) => {
     const newExpanded = new Set(expandedRows);
@@ -283,6 +299,15 @@ export default function TokenMarketAveragePage() {
               </tbody>
             </table>
           </div>
+        )}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={handlePageChange}
+          />
         )}
       </div>
     </Layout>

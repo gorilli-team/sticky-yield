@@ -319,19 +319,34 @@ router.get("/market-average", async (req: Request, res: Response) => {
 /**
  * GET /api/apy/market-average/history
  * Get market average history
- * Query params: hours (default: 24), token (optional - filter by token address)
+ * Query params: hours (default: 24), token (optional - filter by token address), page (default: 1), pageSize (default: 20)
  */
 router.get("/market-average/history", async (req: Request, res: Response) => {
   try {
     const hours = parseInt(req.query.hours as string) || 24;
     const tokenAddress = req.query.token as string | undefined;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize as string) || 10));
 
-    const history = await getMarketAverageHistory(tokenAddress || null, hours);
+    // Get all history first (we need to filter by hours)
+    const allHistory = await getMarketAverageHistory(tokenAddress || null, hours);
+
+    // Calculate pagination
+    const totalCount = allHistory.length;
+    const skip = (page - 1) * pageSize;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    // Apply pagination
+    const history = allHistory.slice(skip, skip + pageSize);
 
     res.json({
       success: true,
       token_address: tokenAddress || null,
       hours,
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
       count: history.length,
       history,
     });

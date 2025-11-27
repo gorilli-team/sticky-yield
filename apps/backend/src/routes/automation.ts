@@ -8,25 +8,38 @@ const router: Router = Router();
 /**
  * GET /api/automation/history
  * Get automation history
- * Query params: vault (optional - filter by vault address), limit (default: 100)
+ * Query params: vault (optional - filter by vault address), page (default: 1), pageSize (default: 20)
  */
 router.get("/history", async (req: Request, res: Response) => {
   try {
     const vaultAddress = req.query.vault as string | undefined;
-    const limit = parseInt(req.query.limit as string) || 100;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize as string) || 10));
 
     const query: any = {};
     if (vaultAddress) {
       query.vault_address = vaultAddress.toLowerCase();
     }
 
+    // Get total count
+    const totalCount = await AutomationHistory.countDocuments(query);
+
+    // Calculate pagination
+    const skip = (page - 1) * pageSize;
+    const totalPages = Math.ceil(totalCount / pageSize);
+
     const history = await AutomationHistory.find(query)
       .sort({ timestamp: -1 })
-      .limit(limit)
+      .skip(skip)
+      .limit(pageSize)
       .lean();
 
     res.json({
       success: true,
+      page,
+      pageSize,
+      totalCount,
+      totalPages,
       count: history.length,
       history,
     });

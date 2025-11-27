@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { ethers } from "ethers";
 import Layout from "@/components/Layout";
+import Pagination from "@/components/Pagination";
 import { getAutomationHistory } from "@/lib/api";
 import { VAULT_ADDRESS } from "@/config/contracts";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function AutomationPage() {
   const router = useRouter();
@@ -11,30 +14,46 @@ export default function AutomationPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
-  const loadHistory = async () => {
+  const loadHistory = async (page: number = 1) => {
     setLoading(true);
     setError("");
     try {
-      const response = await getAutomationHistory(VAULT_ADDRESS, 100);
+      const response = await getAutomationHistory(VAULT_ADDRESS, page, ITEMS_PER_PAGE);
       if (response.success && response.history) {
         setHistory(response.history);
+        setTotalPages(response.totalPages || 1);
+        setTotalCount(response.totalCount || 0);
+        setCurrentPage(response.page || 1);
       } else {
         setError("No automation history available");
         setHistory([]);
+        setTotalPages(1);
+        setTotalCount(0);
       }
     } catch (err: any) {
       console.error("Error loading automation history:", err);
       setError(err.message || "Failed to load automation history");
       setHistory([]);
+      setTotalPages(1);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadHistory();
-  }, []);
+    loadHistory(currentPage);
+  }, [currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const toggleRow = (id: string) => {
     const newExpanded = new Set(expandedRows);
@@ -169,7 +188,7 @@ export default function AutomationPage() {
               Automated yield optimization running every hour
             </p>
           </div>
-          <button onClick={loadHistory} className="refresh-button">
+          <button onClick={() => loadHistory(currentPage)} className="refresh-button">
             Refresh
           </button>
         </div>
@@ -630,6 +649,15 @@ export default function AutomationPage() {
                 </tbody>
               </table>
             </div>
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalCount}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={handlePageChange}
+              />
+            )}
           </>
         )}
       </div>
